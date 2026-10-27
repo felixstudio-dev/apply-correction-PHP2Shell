@@ -16,6 +16,10 @@ Run `php2shell-fix scan --json` for an initial CLI inventory, then check active 
 
 No. This preview implements a separate, limited configuration mitigation for CVE-2026-115560. It does not automatically install security releases or certify patch status for the two critical CVEs.
 
+## Can the tool plan a PHP security package upgrade on Ubuntu or Debian?
+
+Yes. Run `php2shell-fix --plan-update --php /usr/bin/php --json` on a supported apt-managed PHP CLI. The result is a read-only inventory and APT simulation, with clear reasons when candidates cannot be verified against upstream fixed release floors. It does not run an upgrade or inspect active web workers.
+
 ## What does `--apply` change?
 
 Only a specified PHP CLI-loaded `php.ini`, adding `session.upload_progress.enabled=Off` after creating an integrity-checked backup. This can affect session upload-progress features and is not a substitute for the official core security update.

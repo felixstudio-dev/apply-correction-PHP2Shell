@@ -21,6 +21,12 @@ type Finding struct {
 
 type Version struct{ Major, Minor, Patch int }
 
+// MinimumFixed returns the upstream security floor for the two October 2026 PHP CVEs.
+func MinimumFixed(major, minor int) (int, bool) {
+	patch, ok := map[[2]int]int{{8, 2}: 35, {8, 3}: 36, {8, 4}: 27, {8, 5}: 12}[[2]int{major, minor}]
+	return patch, ok
+}
+
 func ParseVersion(s string) (Version, error) {
 	parts := strings.Split(strings.TrimSpace(s), ".")
 	if len(parts) != 3 {
@@ -53,8 +59,7 @@ func Evaluate(version, provenance, uploadProgress string) []Finding {
 	status := "UNKNOWN"
 	reason := "Cannot establish upstream patch status from this version"
 	if err == nil {
-		fixedPatch := map[[2]int]int{{8, 2}: 35, {8, 3}: 36, {8, 4}: 27, {8, 5}: 12}
-		if min, ok := fixedPatch[[2]int{v.Major, v.Minor}]; ok {
+		if min, ok := MinimumFixed(v.Major, v.Minor); ok {
 			if v.Patch >= min {
 				status, reason = "UPSTREAM_FIXED", "At or beyond the upstream security release on this branch; active web workers are not verified"
 			} else if provenance == "upstream" {

@@ -1,6 +1,6 @@
 # PHP2Shell Fix — PHP Security Assessment and Safe Configuration Mitigation
 
-**Project status: early security tooling preview.** This repository contains a working PHP CLI inventory and assessment tool, with a reversible configuration mitigation for a conditional PHP session vulnerability. **It does not automatically install the PHP security releases that fix the two critical PHP2Shell CVEs.** Never treat a successful scan or configuration mitigation as proof that a web server is patched.
+**Project status: early security tooling preview.** This repository contains a working PHP CLI inventory and assessment tool, a read-only native APT update planner, and a reversible configuration mitigation for a conditional PHP session vulnerability. **It does not automatically install the PHP security releases that fix the two critical PHP2Shell CVEs.** Never treat a successful scan or configuration mitigation as proof that a web server is patched.
 
 PHP2Shell is a name used for two critical October 21, 2026 PHP remote-code-execution issues: **CVE-2026-109618** (out-of-memory corruption) and **CVE-2026-109619** (stale request-global state). The PHP project released fixed upstream versions **8.2.35, 8.3.36, 8.4.27 and 8.5.12**. Upgrading to an official patched build or a verified vendor-backported package is required; mitigations are incomplete. A separate conditional issue, **CVE-2026-115560**, involves session upload progress and unusual application runtime configuration. The PHP project recommends disabling `session.upload_progress.enabled` until the upcoming regular release. [Official PHP advisory](https://www.php.net/archive/2026.php#2026-10-21-5) · [PHP's session advisory](https://www.php.net/archive/2026.php#2026-10-23-1).
 
@@ -22,6 +22,14 @@ Windows PowerShell:
 go build -o php2shell-fix.exe ./cmd/php2shell-fix
 .\php2shell-fix.exe scan --json
 ```
+
+On an apt-managed Debian/Ubuntu host, inspect an explicit, package-owned CLI and produce a **read-only** update plan:
+
+```bash
+./php2shell-fix --plan-update --php /usr/bin/php --json
+```
+
+This checks installed branch packages, compares APT candidates with the official upstream patch floor, inspects the candidate repository host, and runs an APT **simulation** (`apt-get -s`). A candidate from an unfamiliar mirror or below the upstream floor is flagged for manual vendor-advisory verification. `ELIGIBLE_FOR_ADMIN_REVIEW` still requires administrator review of release notes, service restarts, backups and application compatibility. **The preview does not execute `apt-get install`**, and vendor backport validation is intentionally not inferred from package version strings. Read [Linux upgrade planning](docs/php2shell-linux.md) before acting on a preview command.
 
 The default action and `scan` are read-only. The tool searches PATH and selected standard installation directories for PHP **CLI** executables, runs a bounded PHP introspection command, and prints version-based findings. **A CLI runtime is not necessarily the PHP worker serving a site.** Docker, IIS, PHP-FPM, Apache modules, hosting panels, distribution backports and other installations require additional verification.
 
@@ -71,7 +79,7 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 | --- | --- | --- |
 | Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Local scan, Go tests and isolated config-change test; no IIS/FastCGI evidence |
 | Windows 10 / Windows Server | UNTESTED | Build targets only |
-| Linux x64, PHP CLI | PARTIALLY_SUPPORTED (tool execution only) | Ubuntu 24.04 WSL2 native binary and mitigation tests passed; no installed PHP CLI for inspection |
+| Linux x64, PHP CLI | PARTIALLY_SUPPORTED (tool execution only) | Ubuntu 24.04 WSL2 native binary, mitigation and APT-planner tests passed; no installed PHP CLI for an end-to-end package plan |
 | Ubuntu/Debian/RHEL/Rocky/AlmaLinux PHP-FPM | DETECTION_ONLY at most | Real worker/package provenance verification unimplemented |
 | Docker, Plesk, cPanel and shared hosting | UNSUPPORTED for mutation | Use vendor/container image update procedures |
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -14,6 +15,7 @@ import (
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/assessment"
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/inventory"
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/mitigation"
+	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/remediation"
 )
 
 type Report struct {
@@ -47,8 +49,9 @@ func run(args []string) int {
 	report := fs.Bool("report", false, "Emit complete machine-readable assessment")
 	rollback := fs.String("rollback", "", "Restore one protected configuration backup by ID")
 	scan := fs.Bool("scan", false, "Discover and assess PHP CLI installations")
+	planUpdate := fs.Bool("plan-update", false, "Inspect a native Debian/Ubuntu PHP package update without changing packages")
 	fs.Usage = func() {
-		fmt.Fprintln(os.Stderr, "php2shell-fix: safe PHP2Shell inventory and conditional session mitigation\n\nCommands:\n  php2shell-fix scan [--php PATH] [--json]\n  php2shell-fix --dry-run --php PATH --ini PATH\n  php2shell-fix --apply --php PATH --ini PATH\n  php2shell-fix --verify --php PATH\n  php2shell-fix --rollback BACKUP-ID\n  php2shell-fix --report [--json]\n\n--apply does not upgrade PHP or remediate CVE-2026-109618/109619.")
+		fmt.Fprintln(os.Stderr, "php2shell-fix: safe PHP2Shell inventory and conditional session mitigation\n\nCommands:\n  php2shell-fix scan [--php PATH] [--json]\n  php2shell-fix --plan-update --php /usr/bin/php --json\n  php2shell-fix --dry-run --php PATH --ini PATH\n  php2shell-fix --apply --php PATH --ini PATH\n  php2shell-fix --verify --php PATH\n  php2shell-fix --rollback BACKUP-ID\n  php2shell-fix --report [--json]\n\n--plan-update is read-only; --apply only performs the conditional session mitigation.")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -67,7 +70,7 @@ func run(args []string) int {
 		*state = v
 	}
 	if *rollback != "" {
-		if *apply || *dry || *verify || *report || *scan {
+		if *apply || *dry || *verify || *report || *scan || *planUpdate {
 			fmt.Fprintln(os.Stderr, "Rollback must run alone")
 			return 3
 		}
@@ -79,13 +82,53 @@ func run(args []string) int {
 		fmt.Printf("Configuration restored from validated backup %s (%s). Restart and validate the real web worker separately.\n", r.ID, r.Target)
 		return 0
 	}
-	if *apply && (*dry || *verify || *report || *scan) {
+	if (*apply && (*dry || *verify || *report || *scan || *planUpdate)) || (*planUpdate && (*dry || *verify || *report || *scan)) {
 		fmt.Fprintln(os.Stderr, "Conflicting actions")
 		return 3
 	}
 	if *apply && (*php == "" || *ini == "") {
 		fmt.Fprintln(os.Stderr, "--apply requires both --php and --ini to bind to the inspected runtime")
 		return 3
+	}
+	if *planUpdate {
+		if runtime.GOOS != "linux" || *php == "" || *ini != "" {
+			fmt.Fprintln(os.Stderr, "--plan-update requires Linux and an explicit --php path; --ini is not used")
+			return 3
+		}
+		selected := inventory.Inspect(*php)
+		if selected.Error != "" || selected.SAPI != "cli" {
+			fmt.Fprintln(os.Stderr, "Selected PHP CLI cannot be verified:", selected.Error)
+			return 3
+		}
+		distro, err := remediation.ReadDistribution()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 3
+		}
+		ctx := context.Background()
+		runner := remediation.CommandRunner{}
+		bound, err := remediation.BoundToAPT(ctx, selected.Executable, selected.Version, runner)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Package ownership verification failed:", err)
+			return 3
+		}
+		if !bound {
+			fmt.Fprintln(os.Stderr, "Selected PHP executable is not owned by its expected native apt CLI package; no update plan is available")
+			return 3
+		}
+		plan, err := remediation.PlanAPT(ctx, distro, selected.Version, runner)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Package planner failed:", err)
+			return 3
+		}
+		encoder := json.NewEncoder(os.Stdout)
+		encoder.SetIndent("", "  ")
+		if err := encoder.Encode(plan); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 3
+		}
+		// An inconclusive plan is still a successful read-only command.
+		return 0
 	}
 	if *apply || *dry {
 		if *php == "" || *ini == "" {
