@@ -81,7 +81,7 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 
 | Environment | Current status | Evidence |
 | --- | --- | --- |
-| Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Local scan, Go tests and isolated config-change test; no IIS/FastCGI evidence |
+| Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Native Windows amd64 CLI scan and `--verify` passed against PHP 8.4.27 on October 27, 2026; reported `CLI_MITIGATION_VERIFIED` only for that CLI and `CONFIG_NOT_FOUND` for IIS. No live IIS/FastCGI worker evidence |
 | Windows 10 client | DETECTION_ONLY; physically UNTESTED | Registry-based client classification and compiled builds; no site-worker evidence |
 | Windows Server / IIS FastCGI | DETECTION_ONLY; physically UNTESTED | Registry-based Server identification and read-only global IIS FastCGI configuration discovery; effective worker and remediation validation pending |
 | Linux x64, PHP CLI | PARTIALLY_SUPPORTED (selected CLI mitigation) | Ubuntu 24.04 WSL2 binary and unit checks; real PHP 8.2.35 CLI mitigation, verification, and hash-checked rollback passed in a disposable Debian 12 container. No active web worker or package upgrade tested |

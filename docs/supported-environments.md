@@ -4,7 +4,7 @@ Supported statuses are `SUPPORTED`, `PARTIALLY_SUPPORTED`, `DETECTION_ONLY`, `UN
 
 | Environment | Status (October 27, 2026) | Implemented / tested boundary |
 | --- | --- | --- |
-| Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Real CLI scan and Windows filesystem mitigation/rollback unit test; production PHP worker upgrade unimplemented |
+| Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | On October 27, 2026, the exact Windows amd64 executable built from `ff5b47c` ran `scan --php PATH --json` and `--verify --php PATH --json` against locally installed PHP 8.4.27. Both commands exited 0; scan reported `ASSESSMENT_ONLY`, `windows-client`, and `CONFIG_NOT_FOUND` for IIS, while verify reported `CLI_MITIGATION_VERIFIED` with an observed empty `upload_progress` value. The Windows configuration was not modified; production PHP workers and Windows Server remain unverified |
 | Windows 10 / Windows 11 clients | DETECTION_ONLY for platform classification; Windows 10 runtime UNTESTED | Windows registry `ProductType=WinNT` identifies client installations; CLI scan is separate from worker verification |
 | Windows Server (including IIS / FastCGI) | DETECTION_ONLY; physical server remediation UNTESTED | `ProductType=ServerNT` distinguishes Windows Server; standard global IIS FastCGI application registrations and handler mappings are read as configuration evidence, while effective site, application pool, worker and patch validation remain unverified |
 | Windows Server domain controllers | DETECTION_ONLY | `ProductType=LanmanNT` is reported distinctly; operational remediation requires separate administrative change control |
@@ -23,3 +23,5 @@ Every JSON assessment includes a `platform` object with `distribution`, `family`
 This list is intentionally conservative. These are detection paths, not a claim that every Linux distribution, Windows version or Windows Server edition has undergone physical remediation testing. Passing a Windows or Linux build does not certify a hosted PHP runtime. The tool does not elevate privileges, start services, change repositories, deploy updates, or upgrade PHP automatically.
 
 The Debian, CentOS, and Alpine checks above ran in disposable Docker containers on October 27, 2026; they do not constitute physical Oracle VirtualBox guest testing. The disposable containers were removed and the temporary binary directory was deleted. Previously existing virtual machines and images were preserved.
+
+The native Windows 11 verification above was read-only and specifically covers the installed PHP CLI; it does not show that IIS is running, that Windows Server is supported, or that upstream PHP-core vulnerabilities were remediated. The separate native Windows test binary was built inside a disposable Docker build container. No VirtualBox guest was created or deleted for this check.
