@@ -20,13 +20,14 @@ import (
 )
 
 type Report struct {
-	Timestamp     string             `json:"timestamp_utc"`
-	HostOS        string             `json:"host_os"`
-	Platform      platform.Info      `json:"platform"`
-	Status        string             `json:"status"`
-	Note          string             `json:"note"`
-	Installations []Installation     `json:"installations"`
-	Action        *mitigation.Record `json:"action,omitempty"`
+	Timestamp     string               `json:"timestamp_utc"`
+	HostOS        string               `json:"host_os"`
+	Platform      platform.Info        `json:"platform"`
+	Status        string               `json:"status"`
+	Note          string               `json:"note"`
+	Installations []Installation       `json:"installations"`
+	IIS           *inventory.IISReport `json:"iis,omitempty"`
+	Action        *mitigation.Record   `json:"action,omitempty"`
 }
 type Installation struct {
 	inventory.PHP
@@ -172,9 +173,12 @@ func run(args []string) int {
 		return 0
 	}
 	paths := inventory.Candidates(*php)
-	res := Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "ASSESSMENT_ONLY", Note: "Only identified CLI installations were inspected. Active PHP-FPM, Apache, IIS/FastCGI, containers and vendor package backports require independent verification.", Installations: []Installation{}}
+	res := Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), IIS: inventory.DetectIIS(), Status: "ASSESSMENT_ONLY", Note: "Discovered PHP CLI installations were inspected; on Windows, standard IIS FastCGI configuration is also read without executing its worker binaries. Active web workers, containers and vendor backports require independent verification.", Installations: []Installation{}}
 	if len(paths) == 0 {
 		res.Status = "NO_PHP_CLI_FOUND"
+		if res.IIS != nil && len(res.IIS.Bindings) > 0 {
+			res.Status = "IIS_CONFIG_ONLY_NO_PHP_CLI"
+		}
 	}
 	for _, path := range paths {
 		p := inventory.Inspect(path)
@@ -213,6 +217,12 @@ func printReport(r Report, jsonMode bool) {
 	}
 	fmt.Printf("Status: %s | Host: %s\n%s\n", r.Status, r.HostOS, r.Note)
 	fmt.Printf("Platform: %s | Family: %s | Package manager: %s | Planning: %s | Support: %s\n", r.Platform.Distribution, r.Platform.Family, r.Platform.PackageManager, r.Platform.UpdatePlanning, r.Platform.Status)
+	if r.IIS != nil {
+		fmt.Printf("IIS configuration discovery: %s (configured entries do not prove a running PHP worker)\n", r.IIS.Status)
+		for _, binding := range r.IIS.Bindings {
+			fmt.Printf("  %s | %s | %s | %s\n", binding.Source, binding.Scope, binding.Executable, binding.Status)
+		}
+	}
 	if r.Action != nil {
 		fmt.Printf("Backup ID: %s\nUpdated: %s\n", r.Action.ID, r.Action.Target)
 	}

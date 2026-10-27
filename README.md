@@ -33,7 +33,7 @@ This checks installed branch packages, compares APT candidates with the official
 
 The default action and `scan` are read-only. The tool searches PATH and selected standard installation directories for PHP **CLI** executables, runs a bounded PHP introspection command, and prints version-based findings. **A CLI runtime is not necessarily the PHP worker serving a site.** Docker, IIS, PHP-FPM, Apache modules, hosting panels, distribution backports and other installations require additional verification.
 
-`scan --json` additionally reports the detected operating-system family, distribution, package-manager availability and precisely scoped update-planning capability. This includes CentOS Linux/Stream and other recognized Linux families, plus Windows Server classification from the OS registry. Distribution recognition is `DETECTION_ONLY` unless the specific native Debian/Ubuntu APT read-only planning prerequisites are met. Windows Server/IIS FastCGI worker discovery and automatic PHP binary upgrades remain unimplemented.
+`scan --json` additionally reports the detected operating-system family, distribution, package-manager availability and precisely scoped update-planning capability. This includes CentOS Linux/Stream and other recognized Linux families, plus Windows Server classification from the OS registry. On Windows, the `iis` report reads configured PHP FastCGI applications and handler mappings in the standard IIS global configuration file, when accessible; all discovered bindings are `CONFIGURED_ONLY`. Distribution recognition is `DETECTION_ONLY` unless the specific native Debian/Ubuntu APT read-only planning prerequisites are met. Effective Windows Server/IIS FastCGI worker verification and automatic PHP binary upgrades remain unimplemented.
 
 ## Security coverage
 
@@ -81,7 +81,7 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 | --- | --- | --- |
 | Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Local scan, Go tests and isolated config-change test; no IIS/FastCGI evidence |
 | Windows 10 client | DETECTION_ONLY; physically UNTESTED | Registry-based client classification and compiled builds; no site-worker evidence |
-| Windows Server / IIS FastCGI | DETECTION_ONLY; physically UNTESTED | Registry-based Server identification; no IIS/FastCGI mapping or remediation validation |
+| Windows Server / IIS FastCGI | DETECTION_ONLY; physically UNTESTED | Registry-based Server identification and read-only global IIS FastCGI configuration discovery; effective worker and remediation validation pending |
 | Linux x64, PHP CLI | PARTIALLY_SUPPORTED (tool execution only) | Ubuntu 24.04 WSL2 native binary, mitigation and APT-planner tests passed; no installed PHP CLI for an end-to-end package plan |
 | Ubuntu/Debian PHP | PARTIALLY_SUPPORTED for native read-only APT planning | Exact package provenance and compatible official security candidate still require independent admin review |
 | CentOS Linux/Stream, RHEL, Rocky, AlmaLinux, other RPM systems | DETECTION_ONLY | Identifies family and `dnf`/`yum` where available; no RPM upgrade automation or vendor backport attestation |
