@@ -1,0 +1,9 @@
+# Architecture and Trust Boundaries
+
+The executable is built from the Go standard library. `internal/inventory` discovers candidate PHP CLIs and inspects each with a bounded, argument-separated subprocess. `internal/assessment` evaluates release floors from the PHP project's October 2026 advisories and explicitly declines to infer vendor backports. `internal/mitigation` handles only an explicitly selected `php.ini`, using an integrity-checked private backup, exclusive transaction lock, atomic replacement and guarded rollback. The CLI emits human-readable or JSON reports.
+
+The trust boundary is the local administrator's explicitly chosen PHP executable and configuration file. The tool neither fetches scripts nor executes shell commands from remote input. It does **not** authenticate installed package provenance, identify every active web SAPI, inspect application session handler changes, manage services or install PHP security updates.
+
+Operations are bound to a selected PHP executable and its reported loaded INI. A different PHP-FPM or IIS worker may load another configuration. The configuration-change result proves at most CLI-level effectiveness until a real application health check and all production workers are independently verified. No unsigned auto-updater or third-party provider fallback exists.
+
+Risk controls include read-only default execution, eight-second PHP inspection timeout, specific action flags, secure backup directory, filesystem link rejection for modification paths, original and modified file hashes, protected rollback against out-of-band edits, and fail-closed post-apply verification. A stale transaction lock after a crash must be reviewed manually. Cross-process out-of-band configuration writers and arbitrary vendor installation layouts remain outside this release's authority.
