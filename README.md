@@ -33,6 +33,8 @@ This checks installed branch packages, compares APT candidates with the official
 
 The default action and `scan` are read-only. The tool searches PATH and selected standard installation directories for PHP **CLI** executables, runs a bounded PHP introspection command, and prints version-based findings. **A CLI runtime is not necessarily the PHP worker serving a site.** Docker, IIS, PHP-FPM, Apache modules, hosting panels, distribution backports and other installations require additional verification.
 
+`scan --json` additionally reports the detected operating-system family, distribution, package-manager availability and precisely scoped update-planning capability. This includes CentOS Linux/Stream and other recognized Linux families, plus Windows Server classification from the OS registry. Distribution recognition is `DETECTION_ONLY` unless the specific native Debian/Ubuntu APT read-only planning prerequisites are met. Windows Server/IIS FastCGI worker discovery and automatic PHP binary upgrades remain unimplemented.
+
 ## Security coverage
 
 | Vulnerability | Current implementation | Recommended correction |
@@ -78,9 +80,12 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 | Environment | Current status | Evidence |
 | --- | --- | --- |
 | Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Local scan, Go tests and isolated config-change test; no IIS/FastCGI evidence |
-| Windows 10 / Windows Server | UNTESTED | Build targets only |
+| Windows 10 client | DETECTION_ONLY; physically UNTESTED | Registry-based client classification and compiled builds; no site-worker evidence |
+| Windows Server / IIS FastCGI | DETECTION_ONLY; physically UNTESTED | Registry-based Server identification; no IIS/FastCGI mapping or remediation validation |
 | Linux x64, PHP CLI | PARTIALLY_SUPPORTED (tool execution only) | Ubuntu 24.04 WSL2 native binary, mitigation and APT-planner tests passed; no installed PHP CLI for an end-to-end package plan |
-| Ubuntu/Debian/RHEL/Rocky/AlmaLinux PHP-FPM | DETECTION_ONLY at most | Real worker/package provenance verification unimplemented |
+| Ubuntu/Debian PHP | PARTIALLY_SUPPORTED for native read-only APT planning | Exact package provenance and compatible official security candidate still require independent admin review |
+| CentOS Linux/Stream, RHEL, Rocky, AlmaLinux, other RPM systems | DETECTION_ONLY | Identifies family and `dnf`/`yum` where available; no RPM upgrade automation or vendor backport attestation |
+| Other Linux distributions (SUSE, Arch, Alpine, Gentoo, NixOS, Void, etc.) | DETECTION_ONLY | Best-effort PHP CLI scan and OS/package-manager identification; vendor update path unverified |
 | Docker, Plesk, cPanel and shared hosting | UNSUPPORTED for mutation | Use vendor/container image update procedures |
 
 See [supported environments](docs/supported-environments.md), [architecture](docs/architecture.md), [Windows guidance](docs/php2shell-windows.md), [Linux guidance](docs/php2shell-linux.md), [Docker guidance](docs/php2shell-docker.md), and [FAQ](docs/frequently-asked-questions.md). Platform rows are updated only when supported by reproducible evidence; compilation alone is not physical validation.

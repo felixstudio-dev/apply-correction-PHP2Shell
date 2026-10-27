@@ -15,12 +15,14 @@ import (
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/assessment"
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/inventory"
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/mitigation"
+	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/platform"
 	"github.com/felixstudio-dev/apply-correction-PHP2Shell/internal/remediation"
 )
 
 type Report struct {
 	Timestamp     string             `json:"timestamp_utc"`
 	HostOS        string             `json:"host_os"`
+	Platform      platform.Info      `json:"platform"`
 	Status        string             `json:"status"`
 	Note          string             `json:"note"`
 	Installations []Installation     `json:"installations"`
@@ -145,7 +147,7 @@ func run(args []string) int {
 			return 3
 		}
 		if !*apply {
-			printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Status: "DRY_RUN", Note: "Only an explicit configuration mitigation for CVE-2026-115560 is available; no PHP core security update is performed. Active web workers require separate validation.", Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.UploadProgress)}}}, *jsonOutput)
+			printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "DRY_RUN", Note: "Only an explicit configuration mitigation for CVE-2026-115560 is available; no PHP core security update is performed. Active web workers require separate validation.", Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.UploadProgress)}}}, *jsonOutput)
 			return 0
 		}
 		if disabled(p.UploadProgress) {
@@ -166,11 +168,11 @@ func run(args []string) int {
 			fmt.Fprintln(os.Stderr, "Remediation failed:", err)
 			return 3
 		}
-		printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Status: "MITIGATION_APPLIED_CLI_VALIDATED", Note: "CVE-2026-115560 conditional mitigation applied to php.ini. Restart and verify the real web worker. CVE-2026-109618 and CVE-2026-109619 still require official PHP/vendor security updates.", Action: &r, Installations: []Installation{}}, *jsonOutput)
+		printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "MITIGATION_APPLIED_CLI_VALIDATED", Note: "CVE-2026-115560 conditional mitigation applied to php.ini. Restart and verify the real web worker. CVE-2026-109618 and CVE-2026-109619 still require official PHP/vendor security updates.", Action: &r, Installations: []Installation{}}, *jsonOutput)
 		return 0
 	}
 	paths := inventory.Candidates(*php)
-	res := Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Status: "ASSESSMENT_ONLY", Note: "Only identified CLI installations were inspected. Active PHP-FPM, Apache, IIS/FastCGI, containers and vendor package backports require independent verification.", Installations: []Installation{}}
+	res := Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "ASSESSMENT_ONLY", Note: "Only identified CLI installations were inspected. Active PHP-FPM, Apache, IIS/FastCGI, containers and vendor package backports require independent verification.", Installations: []Installation{}}
 	if len(paths) == 0 {
 		res.Status = "NO_PHP_CLI_FOUND"
 	}
@@ -210,6 +212,7 @@ func printReport(r Report, jsonMode bool) {
 		return
 	}
 	fmt.Printf("Status: %s | Host: %s\n%s\n", r.Status, r.HostOS, r.Note)
+	fmt.Printf("Platform: %s | Family: %s | Package manager: %s | Planning: %s | Support: %s\n", r.Platform.Distribution, r.Platform.Family, r.Platform.PackageManager, r.Platform.UpdatePlanning, r.Platform.Status)
 	if r.Action != nil {
 		fmt.Printf("Backup ID: %s\nUpdated: %s\n", r.Action.ID, r.Action.Target)
 	}

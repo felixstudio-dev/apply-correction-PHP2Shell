@@ -121,7 +121,10 @@ func PlanAPT(ctx context.Context, distribution, phpVersion string, runner Runner
 	}
 	branch := fmt.Sprintf("%d.%d", v.Major, v.Minor)
 	p.RequiredVersion = fmt.Sprintf("%s.%d", branch, min)
-	output, err := runner.Run(ctx, "/usr/bin/dpkg-query", "-W", "-f=${db:Status-Abbrev}\t${binary:Package}\t${Version}\n", "php*", "libapache2-mod-php*")
+	// dpkg-query returns exit 1 if any requested pattern has no matches (for
+	// example, when the host uses PHP-FPM and no Apache module is installed).
+	// Enumerate installed package metadata, then filter for the selected branch.
+	output, err := runner.Run(ctx, "/usr/bin/dpkg-query", "-W", "-f=${db:Status-Abbrev}\t${binary:Package}\t${Version}\n")
 	if err != nil {
 		return p, err
 	}

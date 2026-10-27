@@ -25,6 +25,9 @@ func (f fakeAPT) Run(_ context.Context, executable string, args ...string) (stri
 		if len(args) > 0 && args[0] == "-S" {
 			return "php8.4-cli: /usr/bin/php8.4\n", nil
 		}
+		if len(args) != 2 || args[0] != "-W" || !strings.HasPrefix(args[1], "-f=") {
+			return "", errors.New("inventory must enumerate installed packages without optional missing patterns")
+		}
 		return f.installed, nil
 	case "/usr/bin/apt-cache":
 		if len(args) != 2 {
