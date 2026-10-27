@@ -184,16 +184,15 @@ func PlanAPT(ctx context.Context, distribution, phpVersion string, runner Runner
 			allFixed = false
 			pkg.FixStatus = "MAJOR_OR_MINOR_CHANGE_BLOCKED"
 		}
-		_, compareErr := runner.Run(ctx, "/usr/bin/dpkg", "--compare-versions", pkg.Candidate, "gt", pkg.Installed)
-		if compareErr == nil {
-			upgradeAvailable = true
-			upgrades[strings.Split(pkg.Name, ":")[0]] = true
-		}
-		if compareErr != nil {
-			// dpkg exits 1 if not greater, but unexpected errors are also possible.
-			if pkg.Candidate != pkg.Installed {
+		if pkg.Candidate != pkg.Installed {
+			// Any failed ordering comparison is unsafe, including an older candidate
+			// or a failure to execute dpkg. Equal versions need no comparison.
+			if _, compareErr := runner.Run(ctx, "/usr/bin/dpkg", "--compare-versions", pkg.Candidate, "gt", pkg.Installed); compareErr != nil {
 				allFixed = false
 				p.Reasons = append(p.Reasons, "Could not prove package ordering for "+pkg.Name)
+			} else {
+				upgradeAvailable = true
+				upgrades[pkg.Name] = true
 			}
 		}
 	}
@@ -219,27 +218,48 @@ func PlanAPT(ctx context.Context, distribution, phpVersion string, runner Runner
 		p.Reasons = append(p.Reasons, "APT upgrade simulation failed")
 		return p, nil
 	}
-	allowed := make(map[string]bool)
+	allowed := make(map[string]Package)
 	for _, pkg := range p.Packages {
-		allowed[strings.Split(pkg.Name, ":")[0]] = true
+		allowed[pkg.Name] = pkg
 	}
+	seen := make(map[string]bool)
 	for _, line := range strings.Split(simulation, "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 {
 			continue
 		}
-		if fields[0] == "Remv" || fields[0] == "Inst" && (len(fields) < 2 || !allowed[fields[1]]) {
+		if fields[0] == "Remv" || fields[0] == "Purg" || fields[0] == "Inst" && (len(fields) < 2 || !hasPackage(allowed, fields[1])) {
 			p.Status = "DEPENDENCY_CHANGES_REQUIRE_REVIEW"
 			p.Reasons = append(p.Reasons, "APT simulation would remove or install packages outside the selected PHP branch")
 			return p, nil
 		}
-		if fields[0] == "Inst" && len(fields) >= 2 {
-			if !upgrades[fields[1]] {
-				p.Status = "DEPENDENCY_CHANGES_REQUIRE_REVIEW"
-				p.Reasons = append(p.Reasons, "APT would install a PHP package not marked as a verified upgrade")
+		switch fields[0] {
+		case "Inst":
+			pkg := allowed[fields[1]]
+			// apt-get -s reports: Inst name [installed] (candidate origin...)
+			// Require exact installed and candidate versions, not just package names.
+			if !upgrades[fields[1]] || len(fields) < 5 ||
+				fields[2] != "["+pkg.Installed+"]" ||
+				fields[3] != "("+pkg.Candidate ||
+				!strings.HasSuffix(fields[len(fields)-1], ")") {
+				p.Status = "SIMULATION_MISMATCH"
+				p.Reasons = append(p.Reasons, "APT simulation contains a duplicate, malformed, or inconsistent package upgrade")
 				return p, nil
 			}
 			delete(upgrades, fields[1])
+			seen[fields[1]] = true
+		case "Conf":
+			if len(fields) < 4 || !seen[fields[1]] ||
+				fields[2] != "("+allowed[fields[1]].Candidate ||
+				!strings.HasSuffix(fields[len(fields)-1], ")") {
+				p.Status = "SIMULATION_MISMATCH"
+				p.Reasons = append(p.Reasons, "APT simulation would configure an unplanned package or version")
+				return p, nil
+			}
+		case "Keep":
+			p.Status = "SIMULATION_MISMATCH"
+			p.Reasons = append(p.Reasons, "APT simulation contains a held package")
+			return p, nil
 		}
 	}
 	if len(upgrades) != 0 {
@@ -253,6 +273,11 @@ func PlanAPT(ctx context.Context, distribution, phpVersion string, runner Runner
 	// Repository host and version are only preflight indicators; signed package
 	// provenance and effective web-worker patch status remain unverified.
 	return p, nil
+}
+
+func hasPackage(packages map[string]Package, name string) bool {
+	_, found := packages[name]
+	return found
 }
 
 func containsCLI(packages []Package, branch string) bool {

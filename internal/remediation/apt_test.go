@@ -148,3 +148,43 @@ func TestCandidateOriginRejectsMixedSources(t *testing.T) {
 		t.Fatalf("accepted mixed repository sources: %s", got)
 	}
 }
+
+func TestPlanAPTRejectsSimulationMismatch(t *testing.T) {
+	cases := []struct {
+		name       string
+		simulation string
+	}{
+		{"candidate-version-mismatch", "Inst php8.4-cli [8.4.26-1] (8.4.27-9 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\n"},
+		{"installed-version-mismatch", "Inst php8.4-cli [8.4.25-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\n"},
+		{"duplicate-upgrade", "Inst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\n"},
+		{"unexpected-configuration", "Inst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nConf openssl (3.0.2 Ubuntu:24.04)\n"},
+		{"configured-version-mismatch", "Inst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nConf php8.4-common (8.4.27-9 Ubuntu:24.04)\n"},
+		{"malformed-upgrade", "Inst php8.4-cli [8.4.26-1]\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\n"},
+		{"held-package", "Inst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nInst php8.4-common [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nKeep php8.4-common\n"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := goodFixture()
+			f.simulation = tc.simulation
+			p, err := PlanAPT(context.Background(), "ubuntu", "8.4.26", f)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p.Status != "SIMULATION_MISMATCH" {
+				t.Fatalf("status=%s, reasons=%v", p.Status, p.Reasons)
+			}
+		})
+	}
+}
+
+func TestPlanAPTAcceptsAlreadyPatchedBranchComponent(t *testing.T) {
+	f := goodFixture()
+	f.installed = "ii \tphp8.4-cli\t8.4.26-1\nii \tphp8.4-common\t8.4.27-1\n"
+	f.versions["php8.4-common"] = "8.4.27-1"
+	f.candidates["php8.4-common"] = "8.4.27-1"
+	f.simulation = "Inst php8.4-cli [8.4.26-1] (8.4.27-1 Ubuntu:24.04)\nConf php8.4-cli (8.4.27-1 Ubuntu:24.04)\n"
+	p, err := PlanAPT(context.Background(), "ubuntu", "8.4.26", f)
+	if err != nil || p.Status != "ELIGIBLE_FOR_ADMIN_REVIEW" {
+		t.Fatalf("status=%s reasons=%v err=%v", p.Status, p.Reasons, err)
+	}
+}
