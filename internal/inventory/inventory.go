@@ -15,14 +15,23 @@ import (
 )
 
 type PHP struct {
-	Executable     string `json:"executable"`
-	Version        string `json:"version,omitempty"`
-	SAPI           string `json:"sapi,omitempty"`
-	INI            string `json:"ini,omitempty"`
-	UploadProgress string `json:"upload_progress,omitempty"`
-	Provenance     string `json:"provenance"`
-	Context        string `json:"context"`
-	Error          string `json:"error,omitempty"`
+	Executable     string  `json:"executable"`
+	Version        string  `json:"version,omitempty"`
+	SAPI           string  `json:"sapi,omitempty"`
+	INI            string  `json:"ini,omitempty"`
+	UploadProgress *string `json:"upload_progress,omitempty"`
+	Provenance     string  `json:"provenance"`
+	Context        string  `json:"context"`
+	Error          string  `json:"error,omitempty"`
+}
+
+// ProgressValue returns the effective setting for a successfully inspected PHP CLI.
+// Callers must check Error before relying on the value; nil means no observation.
+func (p PHP) ProgressValue() string {
+	if p.UploadProgress == nil {
+		return ""
+	}
+	return *p.UploadProgress
 }
 
 func Candidates(explicit string) []string {
@@ -108,13 +117,17 @@ func Inspect(path string) PHP {
 		return p
 	}
 	var values struct {
-		Version  string `json:"version"`
-		SAPI     string `json:"sapi"`
-		INI      string `json:"ini"`
-		Progress string `json:"progress"`
+		Version  string  `json:"version"`
+		SAPI     string  `json:"sapi"`
+		INI      string  `json:"ini"`
+		Progress *string `json:"progress"`
 	}
 	if err := json.Unmarshal(out, &values); err != nil {
 		p.Error = "PHP inspection returned invalid JSON"
+		return p
+	}
+	if values.Progress == nil {
+		p.Error = "PHP inspection did not report effective session upload-progress setting"
 		return p
 	}
 	p.Version = values.Version

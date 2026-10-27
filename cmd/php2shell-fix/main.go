@@ -85,7 +85,7 @@ func run(args []string) int {
 		fmt.Printf("Configuration restored from validated backup %s (%s). Restart and validate the real web worker separately.\n", r.ID, r.Target)
 		return 0
 	}
-	if (*apply && (*dry || *verify || *report || *scan || *planUpdate)) || (*planUpdate && (*dry || *verify || *report || *scan)) {
+	if (*apply && (*dry || *verify || *report || *scan || *planUpdate)) || (*planUpdate && (*dry || *verify || *report || *scan)) || (*verify && (*dry || *report || *scan)) {
 		fmt.Fprintln(os.Stderr, "Conflicting actions")
 		return 3
 	}
@@ -133,6 +133,27 @@ func run(args []string) int {
 		// An inconclusive plan is still a successful read-only command.
 		return 0
 	}
+	if *verify {
+		if *php == "" {
+			fmt.Fprintln(os.Stderr, "--verify requires an explicit --php executable")
+			return 3
+		}
+		p := inventory.Inspect(*php)
+		if p.Error != "" || p.SAPI != "cli" || p.INI == "" || p.UploadProgress == nil {
+			fmt.Fprintln(os.Stderr, "Cannot verify loaded PHP CLI configuration:", p.Error)
+			return 3
+		}
+		status := "CLI_MITIGATION_VERIFIED"
+		note := "The inspected PHP CLI reports session.upload_progress.enabled disabled. This does not verify active web workers or PHP core security fixes."
+		code := 0
+		if !disabled(p.ProgressValue()) {
+			status = "CLI_MITIGATION_NOT_APPLIED"
+			note = "The inspected PHP CLI reports session.upload_progress.enabled active. No configuration was changed; active web workers and PHP core security fixes are not verified."
+			code = 2
+		}
+		printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: status, Note: note, Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.ProgressValue())}}}, *jsonOutput)
+		return code
+	}
 	if *apply || *dry {
 		if *php == "" || *ini == "" {
 			fmt.Fprintln(os.Stderr, "--dry-run and --apply require explicit --php and --ini")
@@ -148,10 +169,10 @@ func run(args []string) int {
 			return 3
 		}
 		if !*apply {
-			printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "DRY_RUN", Note: "Only an explicit configuration mitigation for CVE-2026-115560 is available; no PHP core security update is performed. Active web workers require separate validation.", Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.UploadProgress)}}}, *jsonOutput)
+			printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "DRY_RUN", Note: "Only an explicit configuration mitigation for CVE-2026-115560 is available; no PHP core security update is performed. Active web workers require separate validation.", Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.ProgressValue())}}}, *jsonOutput)
 			return 0
 		}
-		if disabled(p.UploadProgress) {
+		if disabled(p.ProgressValue()) {
 			fmt.Println("NO_OP: session.upload_progress already disabled for this PHP CLI configuration; web worker verification required.")
 			return 0
 		}
@@ -160,7 +181,7 @@ func run(args []string) int {
 			if got.Error != "" {
 				return errors.New(got.Error)
 			}
-			if !sameFile(got.INI, *ini) || !disabled(got.UploadProgress) {
+			if !sameFile(got.INI, *ini) || !disabled(got.ProgressValue()) {
 				return errors.New("selected PHP CLI did not load the expected mitigation")
 			}
 			return nil
@@ -184,7 +205,7 @@ func run(args []string) int {
 		p := inventory.Inspect(path)
 		inst := Installation{PHP: p}
 		if p.Error == "" {
-			inst.Findings = assessment.Evaluate(p.Version, p.Provenance, p.UploadProgress)
+			inst.Findings = assessment.Evaluate(p.Version, p.Provenance, p.ProgressValue())
 		}
 		res.Installations = append(res.Installations, inst)
 	}

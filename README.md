@@ -67,13 +67,15 @@ Choose the PHP executable and its actual loaded `php.ini`; confirm these paths b
 ./php2shell-fix --rollback BACKUP_ID
 ```
 
+`--verify` requires an explicit PHP CLI path and reports `CLI_MITIGATION_VERIFIED` only if that CLI can be inspected and reports session upload progress disabled. `CLI_MITIGATION_NOT_APPLIED` means it is still enabled. In JSON, `upload_progress: ""` is the actual disabled value returned by PHP's `ini_get`; it is retained rather than omitted. These results are limited to the selected **CLI**, not PHP-FPM, Apache or IIS workers.
+
 After application, restart **only the relevant PHP workers under your own change procedure**, check each web-serving SAPI's effective settings and health, and install the official PHP security release for CVE-2026-109618/109619. **Do not assume the CLI `php.ini` controls PHP-FPM, Apache or IIS.** For production FPM, you will usually need to configure its separately loaded INI or pool settings and verify those directly. This release deliberately does not automate server restarts or package upgrades.
 
 Backups are stored under `~/.php2shell-fix/`, protected with user-only permissions on POSIX and a restricted current-user ACL on Windows. Rollback validates the saved SHA-256 and refuses to overwrite independently modified configuration. A stale `.lock` file after a crash requires manual inspection before removal. See [backup and recovery](docs/rollback.md).
 
 ## Exit codes and machine-readable output
 
-`0` = command completed (findings can still require action); `3` = refused action, validation failure or operational error. Structured reports support `--json` and `--report`; see [vulnerability coverage](docs/vulnerability-coverage.md) for status semantics. Reports contain filesystem paths and potentially sensitive environment details: store them in a controlled location.
+`0` = command completed (findings can still require action; for `--verify`, the selected CLI reports the mitigation disabled); `2` = `--verify` found session upload progress enabled in the selected CLI; `3` = refused action, incomplete verification or operational error. Structured reports support `--json` and `--report`; see [vulnerability coverage](docs/vulnerability-coverage.md) for status semantics. Reports contain filesystem paths and potentially sensitive environment details: store them in a controlled location.
 
 ## Compatibility and limitations
 
@@ -82,9 +84,9 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 | Windows 11 x64, PHP CLI | PARTIALLY_SUPPORTED | Local scan, Go tests and isolated config-change test; no IIS/FastCGI evidence |
 | Windows 10 client | DETECTION_ONLY; physically UNTESTED | Registry-based client classification and compiled builds; no site-worker evidence |
 | Windows Server / IIS FastCGI | DETECTION_ONLY; physically UNTESTED | Registry-based Server identification and read-only global IIS FastCGI configuration discovery; effective worker and remediation validation pending |
-| Linux x64, PHP CLI | PARTIALLY_SUPPORTED (tool execution only) | Ubuntu 24.04 WSL2 native binary, mitigation and APT-planner tests passed; no installed PHP CLI for an end-to-end package plan |
+| Linux x64, PHP CLI | PARTIALLY_SUPPORTED (selected CLI mitigation) | Ubuntu 24.04 WSL2 binary and unit checks; real PHP 8.2.35 CLI mitigation, verification, and hash-checked rollback passed in a disposable Debian 12 container. No active web worker or package upgrade tested |
 | Ubuntu/Debian PHP | PARTIALLY_SUPPORTED for native read-only APT planning | Exact package provenance and compatible official security candidate still require independent admin review |
-| CentOS Linux/Stream, RHEL, Rocky, AlmaLinux, other RPM systems | DETECTION_ONLY | Identifies family and `dnf`/`yum` where available; no RPM upgrade automation or vendor backport attestation |
+| CentOS Linux/Stream, RHEL, Rocky, AlmaLinux, other RPM systems | DETECTION_ONLY | CentOS container scan identified `yum`; other RPM variants require independent validation. No RPM upgrade automation or vendor backport attestation |
 | Other Linux distributions (SUSE, Arch, Alpine, Gentoo, NixOS, Void, etc.) | DETECTION_ONLY | Best-effort PHP CLI scan and OS/package-manager identification; vendor update path unverified |
 | Docker, Plesk, cPanel and shared hosting | UNSUPPORTED for mutation | Use vendor/container image update procedures |
 
