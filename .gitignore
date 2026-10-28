@@ -1,0 +1,10 @@
+*.exe
+*.test
+*.out
+coverage.txt
+.idea/
+.vscode/
+.tools/
+.php2shell-fix/
+*.ini.bak
+*.local.json
