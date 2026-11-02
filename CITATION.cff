@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this tool in security research or operations, please cite the repository and specific commit."
+title: "PHP2Shell Fix: PHP Security Assessment and Safe Configuration Mitigation"
+type: software
+authors:
+  - name: Felix Studio Developer
+repository-code: "https://github.com/felixstudio-dev/apply-correction-PHP2Shell"
+license: MIT
