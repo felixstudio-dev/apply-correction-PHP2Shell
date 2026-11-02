@@ -12,6 +12,10 @@ import (
 
 func createPrivateDir(path string) error { return os.Mkdir(path, 0700) }
 
+func createPrivateFile(path string) (*os.File, error) {
+	return os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+}
+
 func openRegular(path string) (*os.File, error) {
 	fd, err := unix.Open(path, unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_CLOEXEC|unix.O_NONBLOCK, 0)
 	if err != nil {

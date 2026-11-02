@@ -134,7 +134,7 @@ func lockDir(path string) (func(), error) {
 }
 
 func lockFile(path string) (func(), error) {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	f, err := createPrivateFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("another operation or an interrupted operation holds the lock: %w", err)
 	}
@@ -143,7 +143,7 @@ func lockFile(path string) (func(), error) {
 }
 
 func saveNew(path string, b []byte) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	f, err := createPrivateFile(path)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,11 @@ func atomicReplace(path string, data []byte, mode os.FileMode) error {
 		return err
 	}
 	dir := filepath.Dir(path)
-	f, err := os.CreateTemp(dir, ".php2shell-fix-*")
+	var random [16]byte
+	if _, err := rand.Read(random[:]); err != nil {
+		return err
+	}
+	f, err := createPrivateFile(filepath.Join(dir, ".php2shell-fix-"+hex.EncodeToString(random[:])))
 	if err != nil {
 		return err
 	}

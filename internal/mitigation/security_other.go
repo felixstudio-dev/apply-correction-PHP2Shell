@@ -10,6 +10,7 @@ import (
 func unsupported() error {
 	return errors.New("secure configuration mutation is supported only on Linux and Windows")
 }
+func createPrivateFile(string) (*os.File, error)                  { return nil, unsupported() }
 func openRegular(string) (*os.File, error)                        { return nil, unsupported() }
 func createPrivateDir(string) error                               { return unsupported() }
 func validateAncestors(string) error                              { return unsupported() }

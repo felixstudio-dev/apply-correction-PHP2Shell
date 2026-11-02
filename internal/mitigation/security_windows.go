@@ -69,6 +69,29 @@ func trustedSID(sid, current *windows.SID) bool {
 	return sid.Equals(current) || sid.IsWellKnown(windows.WinLocalSystemSid) || sid.IsWellKnown(windows.WinBuiltinAdministratorsSid) || sid.String() == trustedInstaller
 }
 
+// Elevated tokens can default to Administrators ownership. Set owner and DACL
+// at creation for every recovery/temporary file, not only the state directory.
+func createPrivateFile(path string) (*os.File, error) {
+	sid, err := currentSID()
+	if err != nil {
+		return nil, err
+	}
+	sd, err := windows.SecurityDescriptorFromString("O:" + sid.String() + "D:P(A;;FA;;;" + sid.String() + ")")
+	if err != nil {
+		return nil, err
+	}
+	p, err := windows.UTF16PtrFromString(path)
+	if err != nil {
+		return nil, err
+	}
+	sa := windows.SecurityAttributes{Length: uint32(unsafe.Sizeof(windows.SecurityAttributes{})), SecurityDescriptor: sd}
+	h, err := windows.CreateFile(p, windows.GENERIC_READ|windows.GENERIC_WRITE, 0, &sa, windows.CREATE_NEW, windows.FILE_ATTRIBUTE_NORMAL, 0)
+	if err != nil {
+		return nil, err
+	}
+	return os.NewFile(uintptr(h), path), nil
+}
+
 // Fail closed on unfamiliar ACE forms. Do not attempt to repair an existing DACL.
 func validateACL(path string, private bool) error {
 	current, err := currentSID()
