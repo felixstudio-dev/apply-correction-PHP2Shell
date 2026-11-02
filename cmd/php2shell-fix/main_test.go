@@ -150,3 +150,25 @@ func captureRun(t *testing.T, args ...string) (int, string) {
 	}
 	return code, strings.TrimSpace(string(b))
 }
+
+func TestIdempotentApplyHonorsJSON(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX fake PHP; real CLI validated separately")
+	}
+	root := t.TempDir()
+	ini := filepath.Join(root, "php.ini")
+	if err := os.WriteFile(ini, []byte("session.upload_progress.enabled=Off\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	php := fakePHP(t, map[string]string{"version": "8.2.35", "sapi": "cli", "ini": ini, "progress": ""})
+	for i := 0; i < 2; i++ {
+		code, output := captureRun(t, "--apply", "--json", "--php", php, "--ini", ini, "--state-dir", filepath.Join(root, "state"))
+		var r Report
+		if code != 0 || json.Unmarshal([]byte(output), &r) != nil || r.Status != "NO_OP" || r.Action != nil {
+			t.Fatalf("invalid no-op report: %d %s", code, output)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(root, "state")); !os.IsNotExist(err) {
+		t.Fatal("no-op created recovery state")
+	}
+}
