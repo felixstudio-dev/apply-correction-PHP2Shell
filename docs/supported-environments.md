@@ -27,6 +27,8 @@ Every JSON assessment includes a `platform` object with `distribution`, `family`
 
 This list is intentionally conservative. Physical evidence applies only to the particular CLI configurations listed, not to every Linux distribution, Windows version or Windows Server edition. Passing a Windows or Linux build does not certify a hosted PHP runtime. The tool does not elevate privileges, start services, change repositories, deploy updates, or upgrade PHP automatically.
 
+The separate [equivalent PHP runtime matrix](validation/php-runtime-equivalents-2026-11-02.md) exercised seven upstream PHP versions with synthetic CentOS 7 and AlmaLinux 9.8 identity fixtures. It does not promote either distribution to physically validated status or validate cPanel/TuxCare. That record also documents outstanding metadata and backup-state review gates before broader mutation claims.
+
 The October 27 Debian, CentOS, and Alpine checks ran in disposable Docker containers; they do not constitute physical Oracle VirtualBox guest testing. The separate November 2 CentOS Stream 10 result above used an installed VirtualBox guest. The disposable containers were removed and the temporary binary directory was deleted. Previously existing virtual machines and images were preserved.
 
 The native Windows 11 verification above was read-only and specifically covers the installed PHP CLI; it does not show that IIS is running or that upstream PHP-core vulnerabilities were remediated. The separate native Windows test binary was built inside a disposable Docker build container. The later Windows Server CLI validation used separate, temporary VirtualBox guests; see [Windows Server physical QA evidence](validation/windows-server-2026-10-27.md).
