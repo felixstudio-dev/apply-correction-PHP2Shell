@@ -9,11 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
-	"os/user"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -21,16 +18,17 @@ import (
 const maxINI = 16 << 20
 
 type Record struct {
-	ID           string `json:"id"`
-	Created      string `json:"created_utc"`
-	Target       string `json:"target"`
-	OriginalHash string `json:"original_sha256"`
-	AppliedHash  string `json:"applied_sha256"`
-	Backup       string `json:"backup"`
-	Mode         uint32 `json:"mode"`
-	Action       string `json:"action"`
-	CLIValidated bool   `json:"cli_validated"`
-	RolledBack   bool   `json:"rolled_back"`
+	ID           string        `json:"id"`
+	Created      string        `json:"created_utc"`
+	Target       string        `json:"target"`
+	OriginalHash string        `json:"original_sha256"`
+	AppliedHash  string        `json:"applied_sha256"`
+	Backup       string        `json:"backup"`
+	Mode         uint32        `json:"mode"`
+	Action       string        `json:"action"`
+	CLIValidated bool          `json:"cli_validated"`
+	RolledBack   bool          `json:"rolled_back"`
+	Metadata     *fileMetadata `json:"metadata,omitempty"`
 }
 
 var validID = regexp.MustCompile(`^[0-9a-f]{32}$`)
@@ -69,7 +67,12 @@ func readINI(path string) ([]byte, os.FileMode, error) {
 	if err := checkNoLinks(path); err != nil {
 		return nil, 0, err
 	}
-	st, err := os.Stat(path)
+	f, err := openRegular(path)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer f.Close()
+	st, err := f.Stat()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -79,7 +82,10 @@ func readINI(path string) ([]byte, os.FileMode, error) {
 	if st.Size() > maxINI {
 		return nil, 0, errors.New("configuration exceeds 16 MiB limit")
 	}
-	b, err := os.ReadFile(path)
+	b, err := io.ReadAll(io.LimitReader(f, maxINI+1))
+	if len(b) > maxINI {
+		return nil, 0, errors.New("configuration exceeds 16 MiB limit")
+	}
 	if err == nil && strings.ContainsRune(string(b), '\x00') {
 		return nil, 0, errors.New("configuration contains NUL bytes; refusing to edit")
 	}
@@ -107,38 +113,33 @@ func PatchUploadProgress(original []byte) ([]byte, bool) {
 }
 
 func ensureStateDir(path string) error {
-	if err := os.MkdirAll(path, 0700); err != nil {
-		return err
-	}
-	if err := checkNoLinks(path); err != nil {
-		return err
-	}
-	if err := os.Chmod(path, 0700); err != nil {
-		return err
-	}
-	if runtime.GOOS == "windows" {
-		current, err := user.Current()
-		if err != nil {
+	if _, err := os.Lstat(path); os.IsNotExist(err) {
+		if err := ensureStateDirParent(path); err != nil {
 			return err
 		}
-		if !strings.HasPrefix(current.Uid, "S-") {
-			return errors.New("cannot resolve Windows SID for private backup ACL")
+		if err := createPrivateDir(path); err != nil {
+			return err
 		}
-		cmd := exec.Command("icacls", path, "/inheritance:r", "/grant:r", "*"+current.Uid+":(OI)(CI)F")
-		if b, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("failed to secure backup ACL: %v: %s", err, strings.TrimSpace(string(b)))
-		}
+	} else if err != nil {
+		return err
 	}
-	return nil
+	return RequireMode(path)
 }
 
+// Create only under an already trusted parent; never repair existing permissions.
+func ensureStateDirParent(path string) error { return validateAncestors(filepath.Dir(path)) }
+
 func lockDir(path string) (func(), error) {
-	f, err := os.OpenFile(filepath.Join(path, ".lock"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	return lockFile(filepath.Join(path, ".lock"))
+}
+
+func lockFile(path string) (func(), error) {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("another operation or an interrupted operation holds the lock: %w", err)
 	}
 	f.Close()
-	return func() { _ = os.Remove(filepath.Join(path, ".lock")) }, nil
+	return func() { _ = os.Remove(path) }, nil
 }
 
 func saveNew(path string, b []byte) error {
@@ -157,6 +158,18 @@ func atomicReplace(path string, data []byte, mode os.FileMode) error {
 	if err := checkNoLinks(path); err != nil {
 		return err
 	}
+	metadata, err := captureMetadata(path)
+	if err != nil {
+		return err
+	}
+	before, _, err := readINI(path)
+	if err != nil {
+		return err
+	}
+	identity, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
 	dir := filepath.Dir(path)
 	f, err := os.CreateTemp(dir, ".php2shell-fix-*")
 	if err != nil {
@@ -164,8 +177,9 @@ func atomicReplace(path string, data []byte, mode os.FileMode) error {
 	}
 	tmp := f.Name()
 	defer os.Remove(tmp)
-	if err = f.Chmod(mode); err == nil {
-		_, err = f.Write(data)
+	_, err = f.Write(data)
+	if err == nil {
+		err = preserveMetadata(f, metadata, mode)
 	}
 	if err == nil {
 		err = f.Sync()
@@ -176,6 +190,20 @@ func atomicReplace(path string, data []byte, mode os.FileMode) error {
 	}
 	if closeErr != nil {
 		return closeErr
+	}
+	currentIdentity, err := os.Lstat(path)
+	if err != nil {
+		return err
+	}
+	current, _, err := readINI(path)
+	if err != nil {
+		return err
+	}
+	if !os.SameFile(identity, currentIdentity) || Hash(before) != Hash(current) {
+		return errors.New("configuration changed while preparing replacement")
+	}
+	if err := requireMetadata(path, metadata); err != nil {
+		return err
 	}
 	return replaceFile(tmp, path)
 }
@@ -195,7 +223,22 @@ func Apply(target, stateDir string, validate func() error) (Record, error) {
 	if err != nil {
 		return Record{}, err
 	}
+	if err := checkNoLinks(target); err != nil {
+		return Record{}, err
+	}
+	if err := validateAncestors(filepath.Dir(target)); err != nil {
+		return Record{}, err
+	}
+	unlockTarget, err := lockFile(target + ".php2shell-fix.lock")
+	if err != nil {
+		return Record{}, err
+	}
+	defer unlockTarget()
 	before, mode, err := readINI(target)
+	if err != nil {
+		return Record{}, err
+	}
+	metadata, err := captureMetadata(target)
 	if err != nil {
 		return Record{}, err
 	}
@@ -210,6 +253,7 @@ func Apply(target, stateDir string, validate func() error) (Record, error) {
 	id := hex.EncodeToString(raw[:])
 	backup := filepath.Join(stateDir, id+".ini.bak")
 	record := Record{ID: id, Created: time.Now().UTC().Format(time.RFC3339), Target: target, OriginalHash: Hash(before), AppliedHash: Hash(after), Backup: backup, Mode: uint32(mode), Action: "disable session.upload_progress for CVE-2026-115560"}
+	record.Metadata = metadata
 	if err = saveNew(backup, before); err != nil {
 		return Record{}, err
 	}
@@ -224,13 +268,18 @@ func Apply(target, stateDir string, validate func() error) (Record, error) {
 	if Hash(latest) != record.OriginalHash {
 		return Record{}, errors.New("configuration changed during backup; update aborted")
 	}
+	if err := requireMetadata(target, record.Metadata); err != nil {
+		return Record{}, err
+	}
 	if err = atomicReplace(target, after, mode); err != nil {
 		return Record{}, err
 	}
 	if validate != nil {
 		if verifyErr := validate(); verifyErr != nil {
 			if current, _, readErr := readINI(target); readErr == nil && Hash(current) == record.AppliedHash {
-				_ = atomicReplace(target, before, mode)
+				if restoreErr := atomicReplace(target, before, mode); restoreErr != nil {
+					return record, fmt.Errorf("CLI verification failed and safe restore failed; retain backup for manual recovery: %w", restoreErr)
+				}
 			}
 			return Record{}, fmt.Errorf("CLI post-change verification failed; attempted safe restore: %w", verifyErr)
 		}
@@ -252,15 +301,20 @@ func Rollback(id, stateDir string) (Record, error) {
 	if !validID.MatchString(id) {
 		return Record{}, errors.New("invalid backup ID")
 	}
-	if err := checkNoLinks(stateDir); err != nil {
+	if err := RequireMode(stateDir); err != nil {
 		return Record{}, err
+	}
+	for _, name := range []string{id + ".json", id + ".ini.bak"} {
+		if err := validatePrivate(filepath.Join(stateDir, name), false); err != nil {
+			return Record{}, err
+		}
 	}
 	unlock, err := lockDir(stateDir)
 	if err != nil {
 		return Record{}, err
 	}
 	defer unlock()
-	raw, err := os.ReadFile(filepath.Join(stateDir, id+".json"))
+	raw, _, err := readINI(filepath.Join(stateDir, id+".json"))
 	if err != nil {
 		return Record{}, err
 	}
@@ -278,17 +332,33 @@ func Rollback(id, stateDir string) (Record, error) {
 	if Hash(backup) != r.OriginalHash {
 		return Record{}, errors.New("backup integrity check failed")
 	}
+	if err := checkNoLinks(r.Target); err != nil {
+		return Record{}, err
+	}
+	if err := validateAncestors(filepath.Dir(r.Target)); err != nil {
+		return Record{}, err
+	}
+	unlockTarget, err := lockFile(r.Target + ".php2shell-fix.lock")
+	if err != nil {
+		return Record{}, err
+	}
+	defer unlockTarget()
 	current, _, err := readINI(r.Target)
 	if err != nil {
 		return Record{}, err
 	}
 	if Hash(current) == r.OriginalHash {
+		if err := requireMetadata(r.Target, r.Metadata); err != nil {
+			return Record{}, err
+		}
 		r.RolledBack = true
-		_ = writeRecord(stateDir, r)
-		return r, nil
+		return r, writeRecord(stateDir, r)
 	}
 	if Hash(current) != r.AppliedHash {
 		return Record{}, errors.New("configuration changed after mitigation; manual review required")
+	}
+	if err := requireMetadata(r.Target, r.Metadata); err != nil {
+		return Record{}, err
 	}
 	if err = atomicReplace(r.Target, backup, os.FileMode(r.Mode)); err != nil {
 		return Record{}, err
@@ -297,21 +367,15 @@ func Rollback(id, stateDir string) (Record, error) {
 	return r, writeRecord(stateDir, r)
 }
 
-// RequireMode refuses world/group-readable state directories on POSIX systems.
+// RequireMode validates ownership, permissions and ancestry without modifying them.
 func RequireMode(stateDir string) error {
 	if err := checkNoLinks(stateDir); err != nil {
 		return err
 	}
-	if runtime.GOOS != "windows" {
-		st, err := os.Stat(stateDir)
-		if err != nil {
-			return err
-		}
-		if st.Mode().Perm()&0077 != 0 {
-			return errors.New("backup directory permissions are too broad")
-		}
+	if err := validateAncestors(filepath.Dir(stateDir)); err != nil {
+		return err
 	}
-	return nil
+	return validatePrivate(stateDir, true)
 }
 
 func ReadRecord(id, stateDir string) (Record, error) {
@@ -321,7 +385,10 @@ func ReadRecord(id, stateDir string) (Record, error) {
 	if err := RequireMode(stateDir); err != nil {
 		return Record{}, err
 	}
-	f, err := os.Open(filepath.Join(stateDir, id+".json"))
+	if err := validatePrivate(filepath.Join(stateDir, id+".json"), false); err != nil {
+		return Record{}, err
+	}
+	f, err := openRegular(filepath.Join(stateDir, id+".json"))
 	if err != nil {
 		return Record{}, err
 	}

@@ -97,12 +97,36 @@ func TestFailedPostCheckRestoresOriginal(t *testing.T) {
 	if err := os.WriteFile(ini, before, 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Apply(ini, filepath.Join(root, "state"), func() error { return errors.New("simulated verification failure") }); err == nil {
+	called := false
+	if _, err := Apply(ini, filepath.Join(root, "state"), func() error { called = true; return errors.New("simulated verification failure") }); err == nil {
 		t.Fatal("verification failure was ignored")
+	}
+	if !called {
+		t.Fatal("test did not reach post-change validation")
 	}
 	after, err := os.ReadFile(ini)
 	if err != nil || string(after) != string(before) {
 		t.Fatalf("original configuration not restored: %v", err)
+	}
+}
+
+func TestTargetLockProtectsAcrossStateDirectories(t *testing.T) {
+	root := t.TempDir()
+	ini := filepath.Join(root, "php.ini")
+	if err := os.WriteFile(ini, []byte("a=1\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	unlock, err := lockFile(ini + ".php2shell-fix.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unlock()
+	if _, err := Apply(ini, filepath.Join(root, "state"), nil); err == nil {
+		t.Fatal("accepted locked target")
+	}
+	b, _ := os.ReadFile(ini)
+	if string(b) != "a=1\n" {
+		t.Fatal("target changed")
 	}
 }
 

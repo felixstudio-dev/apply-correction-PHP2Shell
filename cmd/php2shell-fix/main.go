@@ -64,7 +64,7 @@ func run(args []string) int {
 		fmt.Fprintln(os.Stderr, "Unexpected arguments:", fs.Args())
 		return 3
 	}
-	if *state == "" {
+	if *state == "" && (*apply || *rollback != "") {
 		v, err := mitigation.DefaultStateDir()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -160,7 +160,7 @@ func run(args []string) int {
 			return 3
 		}
 		p := inventory.Inspect(*php)
-		if p.Error != "" {
+		if p.Error != "" || p.SAPI != "cli" {
 			fmt.Fprintln(os.Stderr, "PHP inspection failed:", p.Error)
 			return 3
 		}
@@ -178,7 +178,7 @@ func run(args []string) int {
 		}
 		r, err := mitigation.Apply(*ini, *state, func() error {
 			got := inventory.Inspect(*php)
-			if got.Error != "" {
+			if got.Error != "" || got.SAPI != "cli" {
 				return errors.New(got.Error)
 			}
 			if !sameFile(got.INI, *ini) || !disabled(got.ProgressValue()) {

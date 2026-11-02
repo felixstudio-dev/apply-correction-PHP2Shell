@@ -97,6 +97,27 @@ func TestScanDoesNotReportDisabledSettingWhenInspectionFails(t *testing.T) {
 	}
 }
 
+func TestReadOnlyCommandsDoNotRequireHome(t *testing.T) {
+	t.Setenv("HOME", "")
+	t.Setenv("USERPROFILE", "")
+	missing := filepath.Join(t.TempDir(), "missing-php")
+	for _, command := range []string{"--scan", "--report"} {
+		if code, _ := captureRun(t, command, "--php", missing, "--json"); code != 0 {
+			t.Fatalf("%s needs HOME: %d", command, code)
+		}
+	}
+	if runtime.GOOS != "windows" {
+		ini := filepath.Join(t.TempDir(), "php.ini")
+		php := fakePHP(t, map[string]string{"version": "8.2.35", "sapi": "cli", "ini": ini, "progress": "0"})
+		if code, _ := captureRun(t, "--verify", "--php", php, "--json"); code != 0 {
+			t.Fatalf("verify needs HOME: %d", code)
+		}
+		if code, _ := captureRun(t, "--dry-run", "--php", php, "--ini", ini, "--json"); code != 0 {
+			t.Fatalf("dry-run needs HOME: %d", code)
+		}
+	}
+}
+
 func fakePHP(t *testing.T, fields map[string]string) string {
 	t.Helper()
 	dir := t.TempDir()

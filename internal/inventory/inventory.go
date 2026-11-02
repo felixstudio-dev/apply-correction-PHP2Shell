@@ -51,7 +51,10 @@ func Candidates(explicit string) []string {
 		if _, err := os.Stat(p); err != nil {
 			return
 		}
-		key := strings.ToLower(p)
+		key := p
+		if runtime.GOOS == "windows" {
+			key = strings.ToLower(p)
+		}
 		if seen[key] {
 			return
 		}
@@ -66,7 +69,7 @@ func Candidates(explicit string) []string {
 		add(filepath.Join(dir, exe))
 	}
 	if runtime.GOOS == "linux" {
-		for _, pattern := range []string{"/usr/bin/php", "/usr/bin/php[0-9]*", "/usr/local/bin/php", "/opt/remi/php*/root/usr/bin/php"} {
+		for _, pattern := range linuxPatterns {
 			matches, _ := filepath.Glob(pattern)
 			for _, p := range matches {
 				add(p)
@@ -84,6 +87,8 @@ func Candidates(explicit string) []string {
 	sort.Strings(paths)
 	return paths
 }
+
+var linuxPatterns = []string{"/usr/bin/php", "/usr/bin/php[0-9]*", "/usr/local/bin/php", "/opt/remi/php*/root/usr/bin/php", "/opt/cpanel/ea-php[0-9][0-9]/root/usr/bin/php", "/opt/alt/php[0-9][0-9]/usr/bin/php"}
 
 // Inspect executes the local PHP CLI only; it never claims to identify live web workers.
 func Inspect(path string) PHP {
@@ -134,5 +139,8 @@ func Inspect(path string) PHP {
 	p.SAPI = values.SAPI
 	p.INI = values.INI
 	p.UploadProgress = values.Progress
+	if p.SAPI != "cli" {
+		p.Error = "selected executable is not PHP CLI; web worker not inspected"
+	}
 	return p
 }

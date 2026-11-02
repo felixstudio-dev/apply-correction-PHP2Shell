@@ -33,6 +33,8 @@ This checks installed branch packages, compares APT candidates with the official
 
 The default action and `scan` are read-only. The tool searches PATH and selected standard installation directories for PHP **CLI** executables, runs a bounded PHP introspection command, and prints version-based findings. **A CLI runtime is not necessarily the PHP worker serving a site.** Docker, IIS, PHP-FPM, Apache modules, hosting panels, distribution backports and other installations require additional verification.
 
+Linux discovery includes versioned cPanel EA-PHP and alt-PHP CLI paths. A CGI wrapper or other non-CLI SAPI is reported as an inspection error and cannot be used for mitigation. Read-only commands and dry runs do not require HOME; only apply/rollback resolve the default state directory. Explicit `--state-dir` remains available. These changes do not establish cPanel or live-site mutation support.
+
 `scan --json` additionally reports the detected operating-system family, distribution, package-manager availability and precisely scoped update-planning capability. This includes CentOS Linux/Stream and other recognized Linux families, plus Windows Server classification from the OS registry. On Windows, the `iis` report reads configured PHP FastCGI applications and handler mappings in the standard IIS global configuration file, when accessible; all discovered bindings are `CONFIGURED_ONLY`. Distribution recognition is `DETECTION_ONLY` unless the specific native Debian/Ubuntu APT read-only planning prerequisites are met. Effective Windows Server/IIS FastCGI worker verification and automatic PHP binary upgrades remain unimplemented.
 
 ## Security coverage
