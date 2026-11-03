@@ -330,19 +330,22 @@ func candidateOrigin(text, candidate string) string {
 		}
 		fields := strings.Fields(trimmed)
 		// A candidate's version-table entry has a version and priority, not a source path.
-		if len(fields) >= 2 && fields[0] == candidate && isNumber(fields[1]) {
+		if len(fields) >= 2 && fields[0] == candidate && isPriority(fields[1]) {
 			active = true
 			continue
 		}
-		if active && len(fields) >= 2 && isNumber(fields[1]) && fields[0] != candidate && versionFragment.MatchString(fields[0]) {
+		if active && len(fields) >= 2 && isPriority(fields[1]) && fields[0] != candidate && versionFragment.MatchString(fields[0]) {
 			active = false
 		}
 		if active {
 			// Release labels alone can be forged by a custom apt repository.
 			// All candidate sources must come from accepted official hosts.
-			if len(fields) >= 2 && isNumber(fields[0]) && (strings.HasPrefix(fields[1], "http") || strings.HasPrefix(fields[1], "file:")) {
+			if len(fields) >= 2 && isPriority(fields[0]) {
 				source := fields[1]
 				switch {
+				case source == "/var/lib/dpkg/status" && len(fields) == 2:
+					// The local installed-package entry is not a repository.
+					continue
 				case officialAPTSource(source, "archive.ubuntu.com", "/ubuntu"), officialAPTSource(source, "security.ubuntu.com", "/ubuntu"):
 					if origin != "" && origin != "Ubuntu" {
 						foreignSource = true
@@ -369,7 +372,8 @@ func officialAPTSource(source, host, path string) bool {
 	return source == "https://"+host+path || source == "http://"+host+path
 }
 
-func isNumber(value string) bool {
+func isPriority(value string) bool {
+	value = strings.TrimPrefix(value, "-")
 	if value == "" {
 		return false
 	}

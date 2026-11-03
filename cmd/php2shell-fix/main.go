@@ -173,7 +173,11 @@ func run(args []string) int {
 			return 0
 		}
 		if disabled(p.ProgressValue()) {
-			fmt.Println("NO_OP: session.upload_progress already disabled for this PHP CLI configuration; web worker verification required.")
+			if *jsonOutput {
+				printReport(Report{Timestamp: time.Now().UTC().Format(time.RFC3339), HostOS: runtime.GOOS, Platform: platform.Detect(), Status: "NO_OP", Note: "session.upload_progress already disabled for this PHP CLI configuration; web worker verification required.", Installations: []Installation{{PHP: p, Findings: assessment.Evaluate(p.Version, p.Provenance, p.ProgressValue())}}}, true)
+			} else {
+				fmt.Println("NO_OP: session.upload_progress already disabled for this PHP CLI configuration; web worker verification required.")
+			}
 			return 0
 		}
 		r, err := mitigation.Apply(*ini, *state, func() error {
@@ -214,7 +218,7 @@ func run(args []string) int {
 }
 
 func disabled(v string) bool {
-	return strings.EqualFold(strings.TrimSpace(v), "off") || strings.TrimSpace(v) == "0" || strings.TrimSpace(v) == ""
+	return assessment.UploadProgressDisabled(v)
 }
 
 func sameFile(a, b string) bool {

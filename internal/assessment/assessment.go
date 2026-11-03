@@ -80,9 +80,16 @@ func Evaluate(version, provenance, uploadProgress string) []Finding {
 		base = append(base, Finding{entry.cve, status, reason, entry.ref})
 	}
 	sStatus, sReason := "CONDITIONAL_REVIEW", "Risk depends on application changing session.serialize_handler at runtime before session_start; current CLI settings cannot establish that behavior"
-	if strings.EqualFold(strings.TrimSpace(uploadProgress), "off") || uploadProgress == "0" {
+	if UploadProgressDisabled(uploadProgress) {
 		sStatus, sReason = "CLI_MITIGATED", "Session upload progress is disabled for the inspected CLI configuration; web-worker settings still require verification"
 	}
 	base = append(base, Finding{CVESession, sStatus, sReason, "https://www.php.net/"})
 	return base
+}
+
+// UploadProgressDisabled interprets an observed PHP ini_get value. Callers must
+// reject failed inspections/missing observations before using an empty value.
+func UploadProgressDisabled(value string) bool {
+	value = strings.TrimSpace(value)
+	return value == "" || value == "0" || strings.EqualFold(value, "off")
 }

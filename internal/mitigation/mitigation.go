@@ -104,14 +104,109 @@ func PatchUploadProgress(original []byte) ([]byte, bool) {
 	if strings.Contains(string(original), "\r\n") {
 		newline = "\r\n"
 	}
+	// PHP retains the active PATH/HOST scope even after ordinary section labels.
+	// Insert in the global prefix, leaving every scoped directive unchanged.
+	cut := firstScopedSection(original)
+	prefix, suffix := original[:cut], original[cut:]
 	end := []byte{}
-	if len(original) > 0 && original[len(original)-1] != '\n' {
+	if len(prefix) > 0 && prefix[len(prefix)-1] != '\n' {
 		end = append(end, []byte(newline)...)
 	}
-	patched := append(append(append([]byte{}, original...), end...), []byte("; php2shell-fix: CVE-2026-115560 mitigation"+newline+"session.upload_progress.enabled=Off"+newline)...)
+	patched := append(append(append([]byte{}, prefix...), end...), []byte("; php2shell-fix: CVE-2026-115560 mitigation"+newline+"session.upload_progress.enabled=Off"+newline)...)
+	patched = append(patched, suffix...)
 	return patched, true
 }
 
+func firstScopedSection(data []byte) int {
+	offset := 0
+	var quote byte
+	for _, line := range strings.SplitAfter(string(data), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if quote == 0 && strings.HasPrefix(trimmed, "[") {
+			section := strings.ToUpper(literalSectionName(trimmed[1:]))
+			// PHP needs a nonempty suffix before stripping whitespace and '='.
+			// Bare PATH/HOST names do not switch the active configuration hash.
+			if len(section) > 4 && (strings.HasPrefix(section, "PATH") || strings.HasPrefix(section, "HOST")) {
+				return offset
+			}
+		}
+		for i := 0; i < len(line); i++ {
+			c := line[i]
+			if quote == '\'' {
+				// Single-quoted INI values are raw: backslashes do not escape quotes.
+				if c == '\'' {
+					quote = 0
+				}
+			} else if quote == '"' {
+				if c == '\\' && i+1 < len(line) {
+					// PHP accepts a trailing backslash in a Windows path at end of line.
+					if line[i+1] == '"' && (i+2 == len(line) || line[i+2] == '\r' || line[i+2] == '\n') {
+						quote = 0
+					}
+					i++
+				} else if c == '"' {
+					quote = 0
+				}
+			} else {
+				if c == ';' {
+					break
+				}
+				if c == '\'' || c == '"' {
+					quote = c
+				}
+			}
+		}
+		offset += len(line)
+	}
+	return len(data)
+}
+
+// Decode literal section tokens without evaluating variables or constants.
+// PHP consumes spaces/tabs around double quotes, but keeps them inside names.
+func literalSectionName(text string) string {
+	var name strings.Builder
+	for i := 0; i < len(text); {
+		if text[i] == ']' {
+			return name.String()
+		}
+		if text[i] == '\'' || text[i] == '"' {
+			quote := text[i]
+			i++
+			for i < len(text) && text[i] != quote {
+				c := text[i]
+				if quote == '"' && c == '\\' && i+1 < len(text) && strings.ContainsRune("\"\\$", rune(text[i+1])) {
+					i++
+					c = text[i]
+				}
+				name.WriteByte(c)
+				i++
+			}
+			if i < len(text) {
+				i++
+			}
+			if quote == '"' {
+				for i < len(text) && (text[i] == ' ' || text[i] == '\t') {
+					i++
+				}
+			}
+			continue
+		}
+		start := i
+		for i < len(text) && text[i] != ']' && text[i] != '\'' && text[i] != '"' {
+			// An escaped bracket belongs to the unquoted token.
+			if text[i] == '\\' && i+1 < len(text) {
+				i++
+			}
+			i++
+		}
+		token := text[start:i]
+		if i < len(text) && text[i] == '"' && strings.Trim(token, " \t") == "" {
+			continue
+		}
+		name.WriteString(token)
+	}
+	return name.String()
+}
 func ensureStateDir(path string) error {
 	if _, err := os.Lstat(path); os.IsNotExist(err) {
 		if err := ensureStateDirParent(path); err != nil {
@@ -215,6 +310,10 @@ func atomicReplace(path string, data []byte, mode os.FileMode) error {
 // Apply changes only an explicitly selected php.ini. The caller verifies PHP CLI's loaded path.
 // A full PHP2Shell fix requires an official PHP upgrade; this is a separate conditional mitigation.
 func Apply(target, stateDir string, validate func() error) (Record, error) {
+	stateDir, err := filepath.Abs(stateDir)
+	if err != nil {
+		return Record{}, err
+	}
 	if err := ensureStateDir(stateDir); err != nil {
 		return Record{}, err
 	}
@@ -302,6 +401,10 @@ func writeRecord(stateDir string, r Record) error {
 }
 
 func Rollback(id, stateDir string) (Record, error) {
+	stateDir, err := filepath.Abs(stateDir)
+	if err != nil {
+		return Record{}, err
+	}
 	if !validID.MatchString(id) {
 		return Record{}, errors.New("invalid backup ID")
 	}
@@ -326,9 +429,16 @@ func Rollback(id, stateDir string) (Record, error) {
 	if err = json.Unmarshal(raw, &r); err != nil {
 		return Record{}, err
 	}
-	if r.ID != id || r.Backup != filepath.Join(stateDir, id+".ini.bak") {
+	backupPath, err := filepath.Abs(r.Backup)
+	if err != nil {
+		return Record{}, err
+	}
+	if r.ID != id || backupPath != filepath.Join(stateDir, id+".ini.bak") {
 		return Record{}, errors.New("record integrity validation failed")
 	}
+	// Migrate legacy relative paths only when the current working directory
+	// resolves them to this exact, already validated recovery file.
+	r.Backup = backupPath
 	backup, _, err := readINI(r.Backup)
 	if err != nil {
 		return Record{}, err
@@ -383,6 +493,10 @@ func RequireMode(stateDir string) error {
 }
 
 func ReadRecord(id, stateDir string) (Record, error) {
+	stateDir, err := filepath.Abs(stateDir)
+	if err != nil {
+		return Record{}, err
+	}
 	if !validID.MatchString(id) {
 		return Record{}, errors.New("invalid backup ID")
 	}
