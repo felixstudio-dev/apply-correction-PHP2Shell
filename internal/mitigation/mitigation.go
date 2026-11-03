@@ -123,10 +123,10 @@ func firstScopedSection(data []byte) int {
 	for _, line := range strings.SplitAfter(string(data), "\n") {
 		trimmed := strings.TrimSpace(line)
 		if quote == 0 && strings.HasPrefix(trimmed, "[") {
-			// PHP matches PATH/HOST before trimming whitespace in the section name.
-			section := strings.ToUpper(strings.TrimLeft(trimmed[1:], "\"'"))
-			// PHP matches these prefixes before stripping whitespace and '='.
-			if strings.HasPrefix(section, "PATH") || strings.HasPrefix(section, "HOST") {
+			section := strings.ToUpper(literalSectionName(trimmed[1:]))
+			// PHP needs a nonempty suffix before stripping whitespace and '='.
+			// Bare PATH/HOST names do not switch the active configuration hash.
+			if len(section) > 4 && (strings.HasPrefix(section, "PATH") || strings.HasPrefix(section, "HOST")) {
 				return offset
 			}
 		}
@@ -159,6 +159,31 @@ func firstScopedSection(data []byte) int {
 		offset += len(line)
 	}
 	return len(data)
+}
+
+// Keep whitespace significant and exclude the closing bracket and comments.
+// Quoted brackets are part of the name, not section terminators.
+func literalSectionName(text string) string {
+	var quote byte
+	for i := 0; i < len(text); i++ {
+		c := text[i]
+		if quote != 0 {
+			if c == '\\' && quote == '"' && i+1 < len(text) {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		} else if c == '\'' || c == '"' {
+			quote = c
+		} else if c == ']' {
+			name := text[:i]
+			if len(name) >= 2 && (name[0] == '\'' || name[0] == '"') && name[len(name)-1] == name[0] {
+				return name[1 : len(name)-1]
+			}
+			return strings.TrimLeft(name, "\"'")
+		}
+	}
+	return strings.TrimLeft(text, "\"'")
 }
 
 func ensureStateDir(path string) error {

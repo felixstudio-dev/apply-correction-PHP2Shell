@@ -71,12 +71,25 @@ func TestSectionNameWhitespaceRemainsSignificant(t *testing.T) {
 		}
 	}
 }
+func bareSectionFixtures() []string {
+	return []string{"[PATH]\nsession.upload_progress.enabled=On", "[HOST]\nsession.upload_progress.enabled=On", "[\"PATH\"]\nsession.upload_progress.enabled=On", "['HOST']\nsession.upload_progress.enabled=On", "[path]; comment\nsession.upload_progress.enabled=On", "[\"host\"] ; comment\nsession.upload_progress.enabled=On"}
+}
+
+func TestBareSectionNamesRemainGlobal(t *testing.T) {
+	for _, section := range bareSectionFixtures() {
+		original := []byte(section + "\n")
+		patched, _ := PatchUploadProgress(original)
+		if !strings.HasPrefix(string(patched), string(original)) {
+			t.Errorf("ordinary section misclassified: %q", section)
+		}
+	}
+}
 func TestScopedINIMitigationWithRealPHP(t *testing.T) {
 	php := os.Getenv("PHP2SHELL_TEST_PHP")
 	if php == "" {
 		t.Skip("set PHP2SHELL_TEST_PHP for real CLI integration")
 	}
-	for _, section := range []string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]", "[ PATH=/srv/synthetic]\nsession.upload_progress.enabled=On", "[\tHOST=example.invalid]\nsession.upload_progress.enabled=On", "[\" PATH=/srv/synthetic\"]\nsession.upload_progress.enabled=On"} {
+	for _, section := range append([]string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]", "[ PATH=/srv/synthetic]\nsession.upload_progress.enabled=On", "[\tHOST=example.invalid]\nsession.upload_progress.enabled=On", "[\" PATH=/srv/synthetic\"]\nsession.upload_progress.enabled=On", "[\"PATH'\"]", "['HOST\"']"}, bareSectionFixtures()...) {
 		root := t.TempDir()
 		ini := filepath.Join(root, "php.ini")
 		original := []byte("session.upload_progress.enabled=On\n" + section + "\nmemory_limit=128M\n")
