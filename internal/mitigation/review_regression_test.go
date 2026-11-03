@@ -89,7 +89,7 @@ func TestScopedINIMitigationWithRealPHP(t *testing.T) {
 	if php == "" {
 		t.Skip("set PHP2SHELL_TEST_PHP for real CLI integration")
 	}
-	for _, section := range append([]string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]", "[ PATH=/srv/synthetic]\nsession.upload_progress.enabled=On", "[\tHOST=example.invalid]\nsession.upload_progress.enabled=On", "[\" PATH=/srv/synthetic\"]\nsession.upload_progress.enabled=On", "[\"PATH'\"]", "['HOST\"']"}, bareSectionFixtures()...) {
+	for _, section := range append([]string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]", "[ PATH=/srv/synthetic]\nsession.upload_progress.enabled=On", "[\tHOST=example.invalid]\nsession.upload_progress.enabled=On", "[\" PATH=/srv/synthetic\"]\nsession.upload_progress.enabled=On", "[\"PATH'\"]", "['HOST\"']", "[PATH \"\"]", "['PATH' ]", "[\"PATH\" \"=/srv/synthetic\"]"}, append(bareSectionFixtures(), quotedSectionFixtures()...)...) {
 		root := t.TempDir()
 		ini := filepath.Join(root, "php.ini")
 		original := []byte("session.upload_progress.enabled=On\n" + section + "\nmemory_limit=128M\n")
@@ -166,5 +166,41 @@ func TestRelativeStateRecoveryFromDifferentDirectory(t *testing.T) {
 	b, _ := os.ReadFile(ini)
 	if string(b) != "a=1\n" {
 		t.Fatal("rollback mismatch")
+	}
+}
+
+func quotedSectionFixtures() []string {
+	return []string{
+		"[\"PATH\" ]\nsession.upload_progress.enabled=On",
+		"[\"HOST\"\t]\nsession.upload_progress.enabled=On",
+		"[\"PATH\" \"\"]\nsession.upload_progress.enabled=On",
+		"[\"PA\" \"TH\"]\nsession.upload_progress.enabled=On",
+		"[ \"HOST\" ]\nsession.upload_progress.enabled=On",
+		"['PA''TH']\nsession.upload_progress.enabled=On", "[\"PA\" TH]\nsession.upload_progress.enabled=On", "[PA \"TH\"]\nsession.upload_progress.enabled=On", "[\" PATH\" ]\nsession.upload_progress.enabled=On",
+	}
+}
+func TestQuotedSectionTokensRemainGlobal(t *testing.T) {
+	for _, section := range quotedSectionFixtures() {
+		original := []byte(section + "\n")
+		patched, _ := PatchUploadProgress(original)
+		if !strings.HasPrefix(string(patched), string(original)) {
+			t.Errorf("ordinary section misclassified: %q", section)
+		}
+	}
+}
+
+func TestLiteralSectionTokens(t *testing.T) {
+	for text, want := range map[string]string{
+		"\"PATH\" ]": "PATH", "\"PATH\" \"\"]": "PATH",
+		"PA \"TH\"]": "PA TH", "\"PA\" TH]": "PATH",
+		"PATH \"\"]": "PATH ", "'PATH' ]": "PATH ",
+		" \"HOST\"]": "HOST", "\" PATH\" ]": " PATH",
+		"\"PATH'\"]": "PATH'", "'HOST\"']": "HOST\"",
+		"\"PATH=\\\"x\\\"\"]": "PATH=\"x\"",
+		"\"PATH=]x\"]":        "PATH=]x",
+	} {
+		if got := literalSectionName(text); got != want {
+			t.Errorf("%q: got %q, want %q", text, got, want)
+		}
 	}
 }

@@ -161,31 +161,52 @@ func firstScopedSection(data []byte) int {
 	return len(data)
 }
 
-// Keep whitespace significant and exclude the closing bracket and comments.
-// Quoted brackets are part of the name, not section terminators.
+// Decode literal section tokens without evaluating variables or constants.
+// PHP consumes spaces/tabs around double quotes, but keeps them inside names.
 func literalSectionName(text string) string {
-	var quote byte
-	for i := 0; i < len(text); i++ {
-		c := text[i]
-		if quote != 0 {
-			if c == '\\' && quote == '"' && i+1 < len(text) {
-				i++
-			} else if c == quote {
-				quote = 0
-			}
-		} else if c == '\'' || c == '"' {
-			quote = c
-		} else if c == ']' {
-			name := text[:i]
-			if len(name) >= 2 && (name[0] == '\'' || name[0] == '"') && name[len(name)-1] == name[0] {
-				return name[1 : len(name)-1]
-			}
-			return strings.TrimLeft(name, "\"'")
+	var name strings.Builder
+	for i := 0; i < len(text); {
+		if text[i] == ']' {
+			return name.String()
 		}
+		if text[i] == '\'' || text[i] == '"' {
+			quote := text[i]
+			i++
+			for i < len(text) && text[i] != quote {
+				c := text[i]
+				if quote == '"' && c == '\\' && i+1 < len(text) && strings.ContainsRune("\"\\$", rune(text[i+1])) {
+					i++
+					c = text[i]
+				}
+				name.WriteByte(c)
+				i++
+			}
+			if i < len(text) {
+				i++
+			}
+			if quote == '"' {
+				for i < len(text) && (text[i] == ' ' || text[i] == '\t') {
+					i++
+				}
+			}
+			continue
+		}
+		start := i
+		for i < len(text) && text[i] != ']' && text[i] != '\'' && text[i] != '"' {
+			// An escaped bracket belongs to the unquoted token.
+			if text[i] == '\\' && i+1 < len(text) {
+				i++
+			}
+			i++
+		}
+		token := text[start:i]
+		if i < len(text) && text[i] == '"' && strings.Trim(token, " \t") == "" {
+			continue
+		}
+		name.WriteString(token)
 	}
-	return strings.TrimLeft(text, "\"'")
+	return name.String()
 }
-
 func ensureStateDir(path string) error {
 	if _, err := os.Lstat(path); os.IsNotExist(err) {
 		if err := ensureStateDirParent(path); err != nil {
