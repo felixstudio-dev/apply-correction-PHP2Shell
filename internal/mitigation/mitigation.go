@@ -123,7 +123,8 @@ func firstScopedSection(data []byte) int {
 	for _, line := range strings.SplitAfter(string(data), "\n") {
 		trimmed := strings.TrimSpace(line)
 		if quote == 0 && strings.HasPrefix(trimmed, "[") {
-			section := strings.ToUpper(strings.TrimLeft(trimmed[1:], " \t\"'"))
+			// PHP matches PATH/HOST before trimming whitespace in the section name.
+			section := strings.ToUpper(strings.TrimLeft(trimmed[1:], "\"'"))
 			// PHP matches these prefixes before stripping whitespace and '='.
 			if strings.HasPrefix(section, "PATH") || strings.HasPrefix(section, "HOST") {
 				return offset

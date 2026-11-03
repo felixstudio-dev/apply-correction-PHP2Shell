@@ -61,12 +61,22 @@ func TestPatchPrecedesScopesAndPreservesContents(t *testing.T) {
 		}
 	}
 }
+
+func TestSectionNameWhitespaceRemainsSignificant(t *testing.T) {
+	for _, section := range []string{"[ PATH=/srv/synthetic]", "[\tHOST=example.invalid]", "[\" PATH=/srv/synthetic\"]"} {
+		original := []byte(section + "\nsession.upload_progress.enabled=On\n")
+		patched, _ := PatchUploadProgress(original)
+		if !strings.HasPrefix(string(patched), string(original)) {
+			t.Fatalf("ordinary section misclassified: %q", section)
+		}
+	}
+}
 func TestScopedINIMitigationWithRealPHP(t *testing.T) {
 	php := os.Getenv("PHP2SHELL_TEST_PHP")
 	if php == "" {
 		t.Skip("set PHP2SHELL_TEST_PHP for real CLI integration")
 	}
-	for _, section := range []string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]"} {
+	for _, section := range []string{"[PATH=/srv/synthetic]", "[HOST=example.invalid]", "[PATH = /srv/synthetic]", "[HOST = example.invalid]", "example=\"C:\\path\\\"\n[PATH=/srv/synthetic]", "example='C:\\path\\'\n[HOST=example.invalid]", "[PATH=/srv/synthetic]\n[PHP]\nsession.upload_progress.enabled=On", "example=#\"first\n[PATH=/not-a-section]\nlast\"\n[HOST=example.invalid]", "[ PATH=/srv/synthetic]\nsession.upload_progress.enabled=On", "[\tHOST=example.invalid]\nsession.upload_progress.enabled=On", "[\" PATH=/srv/synthetic\"]\nsession.upload_progress.enabled=On"} {
 		root := t.TempDir()
 		ini := filepath.Join(root, "php.ini")
 		original := []byte("session.upload_progress.enabled=On\n" + section + "\nmemory_limit=128M\n")
