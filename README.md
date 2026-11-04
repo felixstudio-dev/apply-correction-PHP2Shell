@@ -108,6 +108,10 @@ See the [command reference](docs/command-reference.md) for required arguments, o
 
 See [supported environments](docs/supported-environments.md), [architecture](docs/architecture.md), [Windows guidance](docs/php2shell-windows.md), [Linux guidance](docs/php2shell-linux.md), [Docker guidance](docs/php2shell-docker.md), and [FAQ](docs/frequently-asked-questions.md). Platform rows are updated only when supported by reproducible evidence; compilation alone is not physical validation.
 
+## Accessibility
+
+We aim to make the CLI and documentation usable with keyboard input and understandable text output. Read [our accessibility statement](ACCESSIBILITY.md) for priorities, contributor expectations, known testing limitations and how to report a barrier. A short text report is enough; screenshots and disability disclosure are not required. No verified accessibility conformance is claimed.
+
 ## Verify and contribute
 
 ```bash
