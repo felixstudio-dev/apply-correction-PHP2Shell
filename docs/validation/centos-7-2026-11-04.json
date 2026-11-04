@@ -1,0 +1,668 @@
+{
+  "TimestampUtc": "2026-11-04T04:18:44.373325+00:00",
+  "SourceCommit": "7a0600ecd84bc32c817d9cb55d6d59976d2331e9",
+  "BinarySHA256": "3b3df0383012cc91c49e52059d228d3513bd5787eb459607135e0f40460db25a",
+  "OS": "CentOS Linux 7.9.2009",
+  "Architecture": "x86_64",
+  "PHPVersions": [
+    "7.4.33",
+    "8.0.30",
+    "8.1.34"
+  ],
+  "Status": "PASSED_CLI_ONLY",
+  "Commands": 483,
+  "CaseCount": 93,
+  "Cases": [
+    {
+      "Index": 0,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d6b2a31ea392e85b9e19f57a6c0e11a61237397c24a5d09e5bdd42aa5917762f",
+      "RestoredINI_SHA256": "d6b2a31ea392e85b9e19f57a6c0e11a61237397c24a5d09e5bdd42aa5917762f"
+    },
+    {
+      "Index": 1,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "adc81f946bd4a84b9219db06f0ce853405ae560d868c8d55ed34523d23bb5f00",
+      "RestoredINI_SHA256": "adc81f946bd4a84b9219db06f0ce853405ae560d868c8d55ed34523d23bb5f00"
+    },
+    {
+      "Index": 2,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "a138e00160d6631e1f61f69c713f692d98d03b325a67954825b6d8aa1ba7fb16",
+      "RestoredINI_SHA256": "a138e00160d6631e1f61f69c713f692d98d03b325a67954825b6d8aa1ba7fb16"
+    },
+    {
+      "Index": 3,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "689a4819af239018bffdb9da0a84feb9c798862b0ccb465ebde94bd4fc46c0b8",
+      "RestoredINI_SHA256": "689a4819af239018bffdb9da0a84feb9c798862b0ccb465ebde94bd4fc46c0b8"
+    },
+    {
+      "Index": 4,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5408522d9d060537ac9b0ad1afca504c25911a51268dd087e484680a037a8e77",
+      "RestoredINI_SHA256": "5408522d9d060537ac9b0ad1afca504c25911a51268dd087e484680a037a8e77"
+    },
+    {
+      "Index": 5,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "da90c1b47d96af93cd29b7caa0f030ae73476184526b873e949e6797b3934689",
+      "RestoredINI_SHA256": "da90c1b47d96af93cd29b7caa0f030ae73476184526b873e949e6797b3934689"
+    },
+    {
+      "Index": 6,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "2c6d3561427ed92a2042f12e6298436912422267390ef4871c5658da55344104",
+      "RestoredINI_SHA256": "2c6d3561427ed92a2042f12e6298436912422267390ef4871c5658da55344104"
+    },
+    {
+      "Index": 7,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "a50e2c94232e24a942e5baae2e4a3cec0de06de7664328346742ddbfbbf74568",
+      "RestoredINI_SHA256": "a50e2c94232e24a942e5baae2e4a3cec0de06de7664328346742ddbfbbf74568"
+    },
+    {
+      "Index": 8,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "28deb6d9b868256b4a4834a577a6019b4faa5901329cb1a5a1eeccde0d060272",
+      "RestoredINI_SHA256": "28deb6d9b868256b4a4834a577a6019b4faa5901329cb1a5a1eeccde0d060272"
+    },
+    {
+      "Index": 9,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "3ab3be04067e852f4fed996f67de29a7f248fd441f423a321e2440f444da02e4",
+      "RestoredINI_SHA256": "3ab3be04067e852f4fed996f67de29a7f248fd441f423a321e2440f444da02e4"
+    },
+    {
+      "Index": 10,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5505aba86e7d74f815952a4aaa84a4068fac56855221a1fac8061b4979c42f09",
+      "RestoredINI_SHA256": "5505aba86e7d74f815952a4aaa84a4068fac56855221a1fac8061b4979c42f09"
+    },
+    {
+      "Index": 11,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "90363409f11f65f210b2d226831bdd2f08b613cc8d55fa7d858d11b1d9c9194c",
+      "RestoredINI_SHA256": "90363409f11f65f210b2d226831bdd2f08b613cc8d55fa7d858d11b1d9c9194c"
+    },
+    {
+      "Index": 12,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "bcdd275f8cf413152dad847cfa12f031ec189365c60b4fb73c13b4922838e7bb",
+      "RestoredINI_SHA256": "bcdd275f8cf413152dad847cfa12f031ec189365c60b4fb73c13b4922838e7bb"
+    },
+    {
+      "Index": 13,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "8ebfcfe26db058c6036c75b3a56580b9699d0025eab6c722d3f965a7de478677",
+      "RestoredINI_SHA256": "8ebfcfe26db058c6036c75b3a56580b9699d0025eab6c722d3f965a7de478677"
+    },
+    {
+      "Index": 14,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4aef3eaa4ef289d4348447e2537a64cbc6115af81956a716b1066e17b2805f5c",
+      "RestoredINI_SHA256": "4aef3eaa4ef289d4348447e2537a64cbc6115af81956a716b1066e17b2805f5c"
+    },
+    {
+      "Index": 15,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "0ee359cd9f449848f31f3eb076a7cf6fc0dde561cd43cb50f395ddf3626eca64",
+      "RestoredINI_SHA256": "0ee359cd9f449848f31f3eb076a7cf6fc0dde561cd43cb50f395ddf3626eca64"
+    },
+    {
+      "Index": 16,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "9476136a14ff591df98a50d501aeba4687cad03b55ea26bc6f70e6f4d77b7d59",
+      "RestoredINI_SHA256": "9476136a14ff591df98a50d501aeba4687cad03b55ea26bc6f70e6f4d77b7d59"
+    },
+    {
+      "Index": 17,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c5526ab967ac9b508ae4a2cc6751502c455fd305bee3f19802a53017e7646017",
+      "RestoredINI_SHA256": "c5526ab967ac9b508ae4a2cc6751502c455fd305bee3f19802a53017e7646017"
+    },
+    {
+      "Index": 18,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "761d021949dfcd980069c8999489be9f4f046c0ddbae7052932f6091c4f36088",
+      "RestoredINI_SHA256": "761d021949dfcd980069c8999489be9f4f046c0ddbae7052932f6091c4f36088"
+    },
+    {
+      "Index": 19,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "1d76e0456aff307e4f0461ad5b95cdc713765b1f0f35fce5babd3e921648c5f2",
+      "RestoredINI_SHA256": "1d76e0456aff307e4f0461ad5b95cdc713765b1f0f35fce5babd3e921648c5f2"
+    },
+    {
+      "Index": 20,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d5d62f3be3c5917d5fd096b8789ae2f3f575dc3f9386fd10aa10047211d9932b",
+      "RestoredINI_SHA256": "d5d62f3be3c5917d5fd096b8789ae2f3f575dc3f9386fd10aa10047211d9932b"
+    },
+    {
+      "Index": 21,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "ae3bf55215dab8a07c76beeccee691f5fc53dd68b491dcc90f891d24b4d7f307",
+      "RestoredINI_SHA256": "ae3bf55215dab8a07c76beeccee691f5fc53dd68b491dcc90f891d24b4d7f307"
+    },
+    {
+      "Index": 22,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4458518340e23f9cb38996064832d5ae106c3c5ec1b64702e60e5adb9898b9a9",
+      "RestoredINI_SHA256": "4458518340e23f9cb38996064832d5ae106c3c5ec1b64702e60e5adb9898b9a9"
+    },
+    {
+      "Index": 23,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "94b56f56e9089fd2896c3a5e22b210418f526649fed27c6cb9d9b72125394558",
+      "RestoredINI_SHA256": "94b56f56e9089fd2896c3a5e22b210418f526649fed27c6cb9d9b72125394558"
+    },
+    {
+      "Index": 24,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "10de494edb031ce7ca26d18268d53e3ea5c22fe893fd5c1e32eb58ad4d55de51",
+      "RestoredINI_SHA256": "10de494edb031ce7ca26d18268d53e3ea5c22fe893fd5c1e32eb58ad4d55de51"
+    },
+    {
+      "Index": 25,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "e1fb338387cfc20857586c61ad8fbb1485b92532e4aa27a0d9eb92a938e0fe86",
+      "RestoredINI_SHA256": "e1fb338387cfc20857586c61ad8fbb1485b92532e4aa27a0d9eb92a938e0fe86"
+    },
+    {
+      "Index": 26,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c6e05d3ceabdf95479617ab428b3c3bd031b984a5444993866b1913804f7b3d2",
+      "RestoredINI_SHA256": "c6e05d3ceabdf95479617ab428b3c3bd031b984a5444993866b1913804f7b3d2"
+    },
+    {
+      "Index": 27,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "24e6e5886843394f8617fe93e2456ec6f8e0cb20c9bdc5167a8563f23c5a75e9",
+      "RestoredINI_SHA256": "24e6e5886843394f8617fe93e2456ec6f8e0cb20c9bdc5167a8563f23c5a75e9"
+    },
+    {
+      "Index": 28,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "7455e1284e52b88e636da56ab66ca4077555b2f97cfa8497e5b9ca1eefd7d101",
+      "RestoredINI_SHA256": "7455e1284e52b88e636da56ab66ca4077555b2f97cfa8497e5b9ca1eefd7d101"
+    },
+    {
+      "Index": 29,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "544cec48673d0e61a16b56b32b2fe557ee45f6ee7d9abad93350e10ff9dd15bc",
+      "RestoredINI_SHA256": "544cec48673d0e61a16b56b32b2fe557ee45f6ee7d9abad93350e10ff9dd15bc"
+    },
+    {
+      "Index": 30,
+      "PHP": "7.4.33",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "1f84ec6618a3841958fafb6c0a2ad945187ca6b53b9e57886e905a8d1fa35735",
+      "RestoredINI_SHA256": "1f84ec6618a3841958fafb6c0a2ad945187ca6b53b9e57886e905a8d1fa35735"
+    },
+    {
+      "Index": 0,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "81ebba7b6503420eec6de3a96c3ebe3c2da02e75086c4d71f2f45dda2cc043d5",
+      "RestoredINI_SHA256": "81ebba7b6503420eec6de3a96c3ebe3c2da02e75086c4d71f2f45dda2cc043d5"
+    },
+    {
+      "Index": 1,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "615d8fae8e895180b1c61b6dc0d6a4c40a5562112f9751fa478360190ce87624",
+      "RestoredINI_SHA256": "615d8fae8e895180b1c61b6dc0d6a4c40a5562112f9751fa478360190ce87624"
+    },
+    {
+      "Index": 2,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4a1f3505734f6b7d464a570f5019b55ac063d9937d8468dc1f84987022ddc1a4",
+      "RestoredINI_SHA256": "4a1f3505734f6b7d464a570f5019b55ac063d9937d8468dc1f84987022ddc1a4"
+    },
+    {
+      "Index": 3,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4c1c88a6b48b21e4fa893560f9e09da9cdd92464e4ea66509dd196d4b8a52fca",
+      "RestoredINI_SHA256": "4c1c88a6b48b21e4fa893560f9e09da9cdd92464e4ea66509dd196d4b8a52fca"
+    },
+    {
+      "Index": 4,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "0d0d3d49e6b62064dc86309109a11ba17454d3b9bdd44628a470f5c6ae2582d0",
+      "RestoredINI_SHA256": "0d0d3d49e6b62064dc86309109a11ba17454d3b9bdd44628a470f5c6ae2582d0"
+    },
+    {
+      "Index": 5,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "926b76e89ea2f7e03d7d631e3437324e4adccd37271f8e8f4f0bac72c5592a1e",
+      "RestoredINI_SHA256": "926b76e89ea2f7e03d7d631e3437324e4adccd37271f8e8f4f0bac72c5592a1e"
+    },
+    {
+      "Index": 6,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5078f432a2eec2986b534635437152f1f10e9467e742d465d45d338a0c19d1ae",
+      "RestoredINI_SHA256": "5078f432a2eec2986b534635437152f1f10e9467e742d465d45d338a0c19d1ae"
+    },
+    {
+      "Index": 7,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "14876e9a1919e2d4fd4d1de09ac385ad247cdb112306fe2361e437bf7c678181",
+      "RestoredINI_SHA256": "14876e9a1919e2d4fd4d1de09ac385ad247cdb112306fe2361e437bf7c678181"
+    },
+    {
+      "Index": 8,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "fca2e5fa64680cc0ba1759946479a97a2835ce4bdc67d7b1e6dc2696512814bd",
+      "RestoredINI_SHA256": "fca2e5fa64680cc0ba1759946479a97a2835ce4bdc67d7b1e6dc2696512814bd"
+    },
+    {
+      "Index": 9,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d4a4b4c6565af50a56266614693d37b64a169882870be933a40435856cacbcd0",
+      "RestoredINI_SHA256": "d4a4b4c6565af50a56266614693d37b64a169882870be933a40435856cacbcd0"
+    },
+    {
+      "Index": 10,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5c4bf00a5d2f82fe04da66914d04e891fe188be292045fa5e020f549be86fce3",
+      "RestoredINI_SHA256": "5c4bf00a5d2f82fe04da66914d04e891fe188be292045fa5e020f549be86fce3"
+    },
+    {
+      "Index": 11,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "31ded803e48f868ba04e86c6fa2a63c31687e066baaadf70dd320c93edebd28e",
+      "RestoredINI_SHA256": "31ded803e48f868ba04e86c6fa2a63c31687e066baaadf70dd320c93edebd28e"
+    },
+    {
+      "Index": 12,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "b5ef0806ecba1e36f540222994601f1dbe1cf42dd8877277cfee7b4dc12bb598",
+      "RestoredINI_SHA256": "b5ef0806ecba1e36f540222994601f1dbe1cf42dd8877277cfee7b4dc12bb598"
+    },
+    {
+      "Index": 13,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "145a76830690ed3ffca1b2039a599b09add8348eacc56beac2c93cab3bedb104",
+      "RestoredINI_SHA256": "145a76830690ed3ffca1b2039a599b09add8348eacc56beac2c93cab3bedb104"
+    },
+    {
+      "Index": 14,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "245c6a71f4f945e7e015c00ff0227f36163105dc2304a60a5127d1693385ca62",
+      "RestoredINI_SHA256": "245c6a71f4f945e7e015c00ff0227f36163105dc2304a60a5127d1693385ca62"
+    },
+    {
+      "Index": 15,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "67140a5f315c2a61ed9208e799092a3c1236fb54c6db532e5f5e0ebeb68ffe3e",
+      "RestoredINI_SHA256": "67140a5f315c2a61ed9208e799092a3c1236fb54c6db532e5f5e0ebeb68ffe3e"
+    },
+    {
+      "Index": 16,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c91536b2b1c7788d7c7dc6621bf5e7835ac8736bbff959c4c8bed9497112e877",
+      "RestoredINI_SHA256": "c91536b2b1c7788d7c7dc6621bf5e7835ac8736bbff959c4c8bed9497112e877"
+    },
+    {
+      "Index": 17,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "7c5106c8c6e0cc7bf3b9c384d23940da26bc137866442f82fe8e34ebd6f47fb2",
+      "RestoredINI_SHA256": "7c5106c8c6e0cc7bf3b9c384d23940da26bc137866442f82fe8e34ebd6f47fb2"
+    },
+    {
+      "Index": 18,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "b0b0a6caae912c6685f6c03f667793cb23e794336e4f815252db5e3093049e89",
+      "RestoredINI_SHA256": "b0b0a6caae912c6685f6c03f667793cb23e794336e4f815252db5e3093049e89"
+    },
+    {
+      "Index": 19,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "cdab45e2c14b35f0c0819ccd13ba30a26b7cbb0343f8a52e685b06f7431d6d07",
+      "RestoredINI_SHA256": "cdab45e2c14b35f0c0819ccd13ba30a26b7cbb0343f8a52e685b06f7431d6d07"
+    },
+    {
+      "Index": 20,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "0e02d7f9cdac90bfae0372705b682858d24f87f1b3dfb41dac8d8e23d0dec531",
+      "RestoredINI_SHA256": "0e02d7f9cdac90bfae0372705b682858d24f87f1b3dfb41dac8d8e23d0dec531"
+    },
+    {
+      "Index": 21,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "faf51469a4dbe3153c953cd193b7d815e1b657590d45f4fe51a3c970806e53e5",
+      "RestoredINI_SHA256": "faf51469a4dbe3153c953cd193b7d815e1b657590d45f4fe51a3c970806e53e5"
+    },
+    {
+      "Index": 22,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "90690b769e9f38130db609d0f042d4c5ea9abcaa7881327689908d5c9788a047",
+      "RestoredINI_SHA256": "90690b769e9f38130db609d0f042d4c5ea9abcaa7881327689908d5c9788a047"
+    },
+    {
+      "Index": 23,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "a23898bd7d5ba83eaa541d713346fdfad42820de1ba2f43a27fc62a7105c9725",
+      "RestoredINI_SHA256": "a23898bd7d5ba83eaa541d713346fdfad42820de1ba2f43a27fc62a7105c9725"
+    },
+    {
+      "Index": 24,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "7bf14f255f5e09192f37f7c2edf4ff2b319937fedf11127ac44f17d853a97a60",
+      "RestoredINI_SHA256": "7bf14f255f5e09192f37f7c2edf4ff2b319937fedf11127ac44f17d853a97a60"
+    },
+    {
+      "Index": 25,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "3cc0595ac962925611d552f57f310f256b1d1f51435bad594f4e4118843413f1",
+      "RestoredINI_SHA256": "3cc0595ac962925611d552f57f310f256b1d1f51435bad594f4e4118843413f1"
+    },
+    {
+      "Index": 26,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "68711909a09f26318417235de76b8fffd6e2868e9b50c75b8f49c2ef189671e7",
+      "RestoredINI_SHA256": "68711909a09f26318417235de76b8fffd6e2868e9b50c75b8f49c2ef189671e7"
+    },
+    {
+      "Index": 27,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c69a5605c246198786a73543e8a8436cea3bff2f37bd8314589a618076199e01",
+      "RestoredINI_SHA256": "c69a5605c246198786a73543e8a8436cea3bff2f37bd8314589a618076199e01"
+    },
+    {
+      "Index": 28,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "faa0fd791ba8faf2734ad7b08d22425a40eb6ccf3e5e3fe7bc5b9a51623ad916",
+      "RestoredINI_SHA256": "faa0fd791ba8faf2734ad7b08d22425a40eb6ccf3e5e3fe7bc5b9a51623ad916"
+    },
+    {
+      "Index": 29,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "ec6080b5e130b2154d0f813684ced0f5d146cfcfd509cb49127810e0804184a7",
+      "RestoredINI_SHA256": "ec6080b5e130b2154d0f813684ced0f5d146cfcfd509cb49127810e0804184a7"
+    },
+    {
+      "Index": 30,
+      "PHP": "8.0.30",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d34f5903d18572e16bd2b691c77f928c96a0127c926cf3f64a979c214ef4f336",
+      "RestoredINI_SHA256": "d34f5903d18572e16bd2b691c77f928c96a0127c926cf3f64a979c214ef4f336"
+    },
+    {
+      "Index": 0,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "81ebba7b6503420eec6de3a96c3ebe3c2da02e75086c4d71f2f45dda2cc043d5",
+      "RestoredINI_SHA256": "81ebba7b6503420eec6de3a96c3ebe3c2da02e75086c4d71f2f45dda2cc043d5"
+    },
+    {
+      "Index": 1,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "615d8fae8e895180b1c61b6dc0d6a4c40a5562112f9751fa478360190ce87624",
+      "RestoredINI_SHA256": "615d8fae8e895180b1c61b6dc0d6a4c40a5562112f9751fa478360190ce87624"
+    },
+    {
+      "Index": 2,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4a1f3505734f6b7d464a570f5019b55ac063d9937d8468dc1f84987022ddc1a4",
+      "RestoredINI_SHA256": "4a1f3505734f6b7d464a570f5019b55ac063d9937d8468dc1f84987022ddc1a4"
+    },
+    {
+      "Index": 3,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "4c1c88a6b48b21e4fa893560f9e09da9cdd92464e4ea66509dd196d4b8a52fca",
+      "RestoredINI_SHA256": "4c1c88a6b48b21e4fa893560f9e09da9cdd92464e4ea66509dd196d4b8a52fca"
+    },
+    {
+      "Index": 4,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "0d0d3d49e6b62064dc86309109a11ba17454d3b9bdd44628a470f5c6ae2582d0",
+      "RestoredINI_SHA256": "0d0d3d49e6b62064dc86309109a11ba17454d3b9bdd44628a470f5c6ae2582d0"
+    },
+    {
+      "Index": 5,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "926b76e89ea2f7e03d7d631e3437324e4adccd37271f8e8f4f0bac72c5592a1e",
+      "RestoredINI_SHA256": "926b76e89ea2f7e03d7d631e3437324e4adccd37271f8e8f4f0bac72c5592a1e"
+    },
+    {
+      "Index": 6,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5078f432a2eec2986b534635437152f1f10e9467e742d465d45d338a0c19d1ae",
+      "RestoredINI_SHA256": "5078f432a2eec2986b534635437152f1f10e9467e742d465d45d338a0c19d1ae"
+    },
+    {
+      "Index": 7,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "14876e9a1919e2d4fd4d1de09ac385ad247cdb112306fe2361e437bf7c678181",
+      "RestoredINI_SHA256": "14876e9a1919e2d4fd4d1de09ac385ad247cdb112306fe2361e437bf7c678181"
+    },
+    {
+      "Index": 8,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "fca2e5fa64680cc0ba1759946479a97a2835ce4bdc67d7b1e6dc2696512814bd",
+      "RestoredINI_SHA256": "fca2e5fa64680cc0ba1759946479a97a2835ce4bdc67d7b1e6dc2696512814bd"
+    },
+    {
+      "Index": 9,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d4a4b4c6565af50a56266614693d37b64a169882870be933a40435856cacbcd0",
+      "RestoredINI_SHA256": "d4a4b4c6565af50a56266614693d37b64a169882870be933a40435856cacbcd0"
+    },
+    {
+      "Index": 10,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "5c4bf00a5d2f82fe04da66914d04e891fe188be292045fa5e020f549be86fce3",
+      "RestoredINI_SHA256": "5c4bf00a5d2f82fe04da66914d04e891fe188be292045fa5e020f549be86fce3"
+    },
+    {
+      "Index": 11,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "31ded803e48f868ba04e86c6fa2a63c31687e066baaadf70dd320c93edebd28e",
+      "RestoredINI_SHA256": "31ded803e48f868ba04e86c6fa2a63c31687e066baaadf70dd320c93edebd28e"
+    },
+    {
+      "Index": 12,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "b5ef0806ecba1e36f540222994601f1dbe1cf42dd8877277cfee7b4dc12bb598",
+      "RestoredINI_SHA256": "b5ef0806ecba1e36f540222994601f1dbe1cf42dd8877277cfee7b4dc12bb598"
+    },
+    {
+      "Index": 13,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "145a76830690ed3ffca1b2039a599b09add8348eacc56beac2c93cab3bedb104",
+      "RestoredINI_SHA256": "145a76830690ed3ffca1b2039a599b09add8348eacc56beac2c93cab3bedb104"
+    },
+    {
+      "Index": 14,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "245c6a71f4f945e7e015c00ff0227f36163105dc2304a60a5127d1693385ca62",
+      "RestoredINI_SHA256": "245c6a71f4f945e7e015c00ff0227f36163105dc2304a60a5127d1693385ca62"
+    },
+    {
+      "Index": 15,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "67140a5f315c2a61ed9208e799092a3c1236fb54c6db532e5f5e0ebeb68ffe3e",
+      "RestoredINI_SHA256": "67140a5f315c2a61ed9208e799092a3c1236fb54c6db532e5f5e0ebeb68ffe3e"
+    },
+    {
+      "Index": 16,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c91536b2b1c7788d7c7dc6621bf5e7835ac8736bbff959c4c8bed9497112e877",
+      "RestoredINI_SHA256": "c91536b2b1c7788d7c7dc6621bf5e7835ac8736bbff959c4c8bed9497112e877"
+    },
+    {
+      "Index": 17,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "7c5106c8c6e0cc7bf3b9c384d23940da26bc137866442f82fe8e34ebd6f47fb2",
+      "RestoredINI_SHA256": "7c5106c8c6e0cc7bf3b9c384d23940da26bc137866442f82fe8e34ebd6f47fb2"
+    },
+    {
+      "Index": 18,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "b0b0a6caae912c6685f6c03f667793cb23e794336e4f815252db5e3093049e89",
+      "RestoredINI_SHA256": "b0b0a6caae912c6685f6c03f667793cb23e794336e4f815252db5e3093049e89"
+    },
+    {
+      "Index": 19,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "cdab45e2c14b35f0c0819ccd13ba30a26b7cbb0343f8a52e685b06f7431d6d07",
+      "RestoredINI_SHA256": "cdab45e2c14b35f0c0819ccd13ba30a26b7cbb0343f8a52e685b06f7431d6d07"
+    },
+    {
+      "Index": 20,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "0e02d7f9cdac90bfae0372705b682858d24f87f1b3dfb41dac8d8e23d0dec531",
+      "RestoredINI_SHA256": "0e02d7f9cdac90bfae0372705b682858d24f87f1b3dfb41dac8d8e23d0dec531"
+    },
+    {
+      "Index": 21,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "faf51469a4dbe3153c953cd193b7d815e1b657590d45f4fe51a3c970806e53e5",
+      "RestoredINI_SHA256": "faf51469a4dbe3153c953cd193b7d815e1b657590d45f4fe51a3c970806e53e5"
+    },
+    {
+      "Index": 22,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "90690b769e9f38130db609d0f042d4c5ea9abcaa7881327689908d5c9788a047",
+      "RestoredINI_SHA256": "90690b769e9f38130db609d0f042d4c5ea9abcaa7881327689908d5c9788a047"
+    },
+    {
+      "Index": 23,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "a23898bd7d5ba83eaa541d713346fdfad42820de1ba2f43a27fc62a7105c9725",
+      "RestoredINI_SHA256": "a23898bd7d5ba83eaa541d713346fdfad42820de1ba2f43a27fc62a7105c9725"
+    },
+    {
+      "Index": 24,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "7bf14f255f5e09192f37f7c2edf4ff2b319937fedf11127ac44f17d853a97a60",
+      "RestoredINI_SHA256": "7bf14f255f5e09192f37f7c2edf4ff2b319937fedf11127ac44f17d853a97a60"
+    },
+    {
+      "Index": 25,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "3cc0595ac962925611d552f57f310f256b1d1f51435bad594f4e4118843413f1",
+      "RestoredINI_SHA256": "3cc0595ac962925611d552f57f310f256b1d1f51435bad594f4e4118843413f1"
+    },
+    {
+      "Index": 26,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "68711909a09f26318417235de76b8fffd6e2868e9b50c75b8f49c2ef189671e7",
+      "RestoredINI_SHA256": "68711909a09f26318417235de76b8fffd6e2868e9b50c75b8f49c2ef189671e7"
+    },
+    {
+      "Index": 27,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "c69a5605c246198786a73543e8a8436cea3bff2f37bd8314589a618076199e01",
+      "RestoredINI_SHA256": "c69a5605c246198786a73543e8a8436cea3bff2f37bd8314589a618076199e01"
+    },
+    {
+      "Index": 28,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "faa0fd791ba8faf2734ad7b08d22425a40eb6ccf3e5e3fe7bc5b9a51623ad916",
+      "RestoredINI_SHA256": "faa0fd791ba8faf2734ad7b08d22425a40eb6ccf3e5e3fe7bc5b9a51623ad916"
+    },
+    {
+      "Index": 29,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "ec6080b5e130b2154d0f813684ced0f5d146cfcfd509cb49127810e0804184a7",
+      "RestoredINI_SHA256": "ec6080b5e130b2154d0f813684ced0f5d146cfcfd509cb49127810e0804184a7"
+    },
+    {
+      "Index": 30,
+      "PHP": "8.1.34",
+      "Status": "PASSED_CLI_ONLY",
+      "OriginalINI_SHA256": "d34f5903d18572e16bd2b691c77f928c96a0127c926cf3f64a979c214ef4f336",
+      "RestoredINI_SHA256": "d34f5903d18572e16bd2b691c77f928c96a0127c926cf3f64a979c214ef4f336"
+    }
+  ]
+}
