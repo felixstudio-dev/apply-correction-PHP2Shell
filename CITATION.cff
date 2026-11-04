@@ -6,3 +6,20 @@ authors:
   - name: Felix Studio Developer
 repository-code: "https://github.com/felixstudio-dev/apply-correction-PHP2Shell"
 license: MIT
+url: "https://github.com/felixstudio-dev/apply-correction-PHP2Shell"
+abstract: >-
+  PHP2Shell Fix is an open-source Go command-line tool for local PHP CLI
+  inventory and version-based security assessment on Windows and Linux.
+  It provides read-only native Debian/Ubuntu APT update planning and a
+  reversible session upload-progress configuration mitigation for an
+  explicitly selected PHP CLI. It does not install PHP security updates,
+  verify active web workers, or certify vendor backports.
+keywords:
+  - PHP
+  - PHP2Shell
+  - security assessment
+  - command-line tool
+  - configuration mitigation
+  - APT update planning
+  - rollback
+  - Go

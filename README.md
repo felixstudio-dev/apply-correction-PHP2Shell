@@ -1,10 +1,18 @@
 # PHP2Shell Fix — PHP Security Assessment and Safe Configuration Mitigation
 
+PHP2Shell Fix (`php2shell-fix`) is an open-source Go command-line tool for local PHP security assessment on Windows and Linux. It helps administrators inventory PHP CLI installations, review Debian/Ubuntu APT update candidates, and apply a reversible `php.ini` session upload-progress mitigation to an explicitly selected CLI.
+
+[Get started](#quick-start) · [Documentation](docs/README.md) · [Command reference](docs/command-reference.md) · [Supported environments](docs/supported-environments.md) · [FAQ](docs/frequently-asked-questions.md)
+
 **Project status: early security tooling preview.** This repository contains a working PHP CLI inventory and assessment tool, a read-only native APT update planner, and a reversible configuration mitigation for a conditional PHP session vulnerability. **It does not automatically install the PHP security releases that fix the two critical PHP2Shell CVEs.** Never treat a successful scan or configuration mitigation as proof that a web server is patched.
 
 PHP2Shell is a name used for two critical October 21, 2026 PHP remote-code-execution issues: **CVE-2026-109618** (out-of-memory corruption) and **CVE-2026-109619** (stale request-global state). The PHP project released fixed upstream versions **8.2.35, 8.3.36, 8.4.27 and 8.5.12**. Upgrading to an official patched build or a verified vendor-backported package is required; mitigations are incomplete. A separate conditional issue, **CVE-2026-115560**, involves session upload progress and unusual application runtime configuration. The PHP project recommends disabling `session.upload_progress.enabled` until the upcoming regular release. [Official PHP advisory](https://www.php.net/archive/2026.php#2026-10-21-5) · [PHP's session advisory](https://www.php.net/archive/2026.php#2026-10-23-1).
 
 ## Quick start
+
+[Source prerelease and checksums](https://github.com/felixstudio-dev/apply-correction-PHP2Shell/releases/tag/v0.1.0-alpha.1) · [Linux amd64 OCI package](https://github.com/felixstudio-dev/apply-correction-PHP2Shell/pkgs/container/apply-correction-php2shell) · [Container usage](packaging/README.md)
+
+The OCI package distributes the CLI binary only. It contains no PHP runtime and does not inspect the Docker host or other containers; copy the binary into an existing PHP image using the [digest-pinned example](packaging/README.md#use-the-published-package). Container mutation remains unsupported.
 
 Prerequisites: Go 1.27+ for source builds; PHP installed locally for live CLI inspection. The tool has **no runtime third-party dependencies** and does not send host inventory or configuration contents to external services.
 
@@ -77,6 +85,8 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 
 ## Exit codes and machine-readable output
 
+See the [command reference](docs/command-reference.md) for required arguments, output formats and command-specific exit behavior. In particular, a successful scan can contain inspection errors or no discovered PHP CLI; check the report rather than using exit code `0` as a security verdict.
+
 `0` = command completed (findings can still require action; for `--verify`, the selected CLI reports the mitigation disabled); `2` = `--verify` found session upload progress enabled in the selected CLI; `3` = refused action, incomplete verification or operational error. Structured reports support `--json` and `--report`; see [vulnerability coverage](docs/vulnerability-coverage.md) for status semantics. Reports contain filesystem paths and potentially sensitive environment details: store them in a controlled location.
 
 ## Compatibility and limitations
@@ -91,6 +101,7 @@ Backups are stored under `~/.php2shell-fix/`, protected with user-only permissio
 | Linux x64, PHP CLI | PARTIALLY_SUPPORTED (selected CLI mitigation) | Ubuntu 24.04 WSL2 binary and unit checks; real PHP 8.2.35 CLI mitigation, verification, and hash-checked rollback passed in a disposable Debian 12 container. No active web worker or package upgrade tested |
 | Ubuntu/Debian PHP | PARTIALLY_SUPPORTED for native read-only APT planning | Exact package provenance and compatible official security candidate still require independent admin review |
 | CentOS Stream 10 x86_64, PHP CLI | PARTIALLY_SUPPORTED (selected CLI mitigation); RPM planning DETECTION_ONLY | Physical VirtualBox validation with PHP 8.3.36 and SELinux enforcing passed the synthetic CLI lifecycle using an explicit state directory, including idempotency and hash-checked rollback. See [the validation record](docs/validation/centos-stream-10-2026-11-02.md) for the initial harness failure and guest-stability limitation |
+| CentOS Linux 7.9 x86_64, PHP CLI | PARTIALLY_SUPPORTED (isolated CLI configuration mitigation); RPM planning DETECTION_ONLY | [November 4, 2026 validation](docs/validation/centos-7-2026-11-04.md) passed 93/93 synthetic INI cases across PHP 7.4.33, 8.0.30 and 8.1.34 with matching rollback hashes; no production INI, web-worker or vendor-backport validation |
 | Other CentOS Linux/Stream versions, RHEL, Rocky, AlmaLinux, other RPM systems | DETECTION_ONLY | CentOS container scan identified `yum`; other RPM variants require independent validation. No RPM upgrade automation or vendor backport attestation |
 | Other Linux distributions (SUSE, Arch, Alpine, Gentoo, NixOS, Void, etc.) | DETECTION_ONLY | Best-effort PHP CLI scan and OS/package-manager identification; vendor update path unverified |
 | Docker, Plesk, cPanel and shared hosting | UNSUPPORTED for mutation | Use vendor/container image update procedures |
@@ -115,4 +126,4 @@ Read [SECURITY.md](SECURITY.md) before reporting a vulnerability, [CONTRIBUTING.
 - [PHP GHSA-6wmf-4rv5-p3rp — CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp)
 - [PHP Windows downloads](https://windows.php.net/download/)
 
-**Maintainer:** [Felix Studio Developer](https://github.com/felixstudio-dev). No official CVE certification or universal remediation guarantee is implied.
+**Maintainer:** [Felix Studio Developer](https://github.com/felixstudio-dev). For questions and reproducible non-sensitive bugs, use [GitHub Issues](https://github.com/felixstudio-dev/apply-correction-PHP2Shell/issues); follow [SECURITY.md](SECURITY.md) for vulnerability reports. For attribution, use [CITATION.cff](CITATION.cff) and identify the exact release or commit you evaluated. No official CVE certification or universal remediation guarantee is implied.
