@@ -39,7 +39,6 @@ docker run --rm --read-only --network=none --cap-drop=ALL --security-opt=no-new-
 
 container="$(docker create "$test_image")"
 trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
-docker export "$container" > "$work_dir/checks/rootfs.tar"
 docker cp "$container:/usr/local/bin/php2shell-fix" "$work_dir/checks/extracted-binary"
 cmp "$context/php2shell-fix" "$work_dir/checks/extracted-binary"
 docker rm "$container" >/dev/null
@@ -55,7 +54,7 @@ EOF
 docker build --platform linux/amd64 -f "$context/Dockerfile.fixture" -t php2shell-package:php-fixture "$context"
 docker run --rm --read-only --network=none --cap-drop=ALL --security-opt=no-new-privileges php2shell-package:php-fixture scan --php /usr/local/bin/php --json > "$work_dir/checks/php-scan.json"
 
-python3 "$tooling_dir/validate.py" "$work_dir" "$expected_revision" "$version" "$php_fixture" "$(go version)"
 docker save "$test_image" -o "$work_dir/output/image.tar"
+python3 "$tooling_dir/validate.py" "$work_dir" "$expected_revision" "$version" "$php_fixture" "$(go version)"
 (cd "$work_dir/output" && sha256sum image.tar > image.tar.sha256)
 printf 'Verified Linux amd64 OCI distribution of %s at %s.\n' "$version" "$expected_revision"

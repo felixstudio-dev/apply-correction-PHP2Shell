@@ -1,5 +1,7 @@
 """Validate only public package artifacts; never ingest host inventory or credentials."""
 import hashlib
+import gzip
+import io
 import json
 import pathlib
 import sys
@@ -33,27 +35,44 @@ allowed = {
     "usr/share/licenses/php2shell-fix/THIRD-PARTY-NOTICES.txt",
     "usr/share/doc/php2shell-fix/README.md",
 }
-# Docker adds these container runtime files at create/export, not to the image layer.
-runtime_files = {".dockerenv", "etc/hostname", "etc/hosts", "etc/resolv.conf"}
-with tarfile.open(work / "checks/rootfs.tar") as archive:
-    entries = list(archive)
-    def safe_name(entry):
-        name = entry.name
-        if name.startswith('./'):
-            name = name[2:]
-        path = pathlib.PurePosixPath(name)
-        assert name and not path.is_absolute() and '..' not in path.parts, f'Unsafe archive path: {entry.name}'
-        assert entry.isfile() or entry.isdir(), f'Unexpected entry type: {entry.name}'
-        assert not entry.mode & 0o7000, f'Special file mode: {entry.name}'
-        return str(path)
-    normalized = [safe_name(entry) for entry in entries]
-    assert len(normalized) == len(set(normalized)), 'Duplicate archive entries'
-    members = [entry for entry in entries if not entry.isdir()]
-    assert all(entry.isfile() for entry in members), "Unexpected links or special files"
-    paths = {safe_name(entry) for entry in members}
-    assert allowed <= paths and paths <= allowed | runtime_files, paths
-    binary_member = next(entry for entry in members if safe_name(entry) == "usr/local/bin/php2shell-fix")
-    assert binary_member.mode & 0o777 == 0o555
+def safe_name(entry):
+    name = entry.name
+    if name.startswith('./'):
+        name = name[2:]
+    path = pathlib.PurePosixPath(name)
+    assert name and not path.is_absolute() and '..' not in path.parts, f'Unsafe archive path: {entry.name}'
+    assert entry.isfile() or entry.isdir(), f'Unexpected entry type: {entry.name}'
+    assert not entry.mode & 0o7000, f'Special file mode: {entry.name}'
+    return str(path)
+
+
+# Inspect immutable image layers, not a container export with injected runtime files.
+paths = set()
+with tarfile.open(work / "output/image.tar") as saved:
+    manifest = json.load(saved.extractfile('manifest.json'))
+    assert len(manifest) == 1 and manifest[0]['RepoTags'] == ['php2shell-package:test']
+    config_bytes = saved.extractfile(manifest[0]['Config']).read()
+    assert 'sha256:' + hashlib.sha256(config_bytes).hexdigest() == image['Id']
+    layer_hashes = json.loads(config_bytes)['rootfs']['diff_ids']
+    assert len(layer_hashes) == len(manifest[0]['Layers'])
+    for layer_name, expected_hash in zip(manifest[0]['Layers'], layer_hashes):
+        layer_bytes = saved.extractfile(layer_name).read()
+        if layer_bytes.startswith(b'\x1f\x8b'):
+            layer_bytes = gzip.decompress(layer_bytes)
+        assert 'sha256:' + hashlib.sha256(layer_bytes).hexdigest() == expected_hash
+        with tarfile.open(fileobj=io.BytesIO(layer_bytes)) as archive:
+            entries = list(archive)
+            normalized = [safe_name(entry) for entry in entries]
+            assert len(normalized) == len(set(normalized)), 'Duplicate archive entries'
+            for entry in entries:
+                if entry.isdir():
+                    continue
+                path = safe_name(entry)
+                assert path in allowed and path not in paths, f'Unexpected or repeated layer file: {path}'
+                paths.add(path)
+                if path == 'usr/local/bin/php2shell-fix':
+                    assert entry.mode & 0o777 == 0o555
+assert paths == allowed, paths
 
 binary_hash = hashlib.sha256((work / "context/php2shell-fix").read_bytes()).hexdigest()
 receipt = {
