@@ -12,12 +12,12 @@ Publication refuses an existing version tag rather than replacing it. Before ret
 
 The workflow checks unit tests, `go vet`, static ELF architecture, the image file allowlist, non-root read-only execution without network, a real PHP 8.4.27 CLI fixture pinned by digest, and binary integrity before and after registry publication. These checks do not validate PHP-FPM/web workers, production INIs, container mitigation or PHP upgrades. The build receipt records the source, compiler, fixture digest and binary hash.
 
-## Use after publication
+## Use the published package
 
-The package target is `ghcr.io/felixstudio-dev/apply-correction-php2shell:v0.1.0-alpha.1`. Its availability and visibility must be verified after the initial publication. Prefer the published immutable digest in a downstream Dockerfile:
+The [public GitHub Packages entry](https://github.com/felixstudio-dev/apply-correction-PHP2Shell/pkgs/container/apply-correction-php2shell) provides `ghcr.io/felixstudio-dev/apply-correction-php2shell:v0.1.0-alpha.1` for Linux amd64. Publication and anonymous registry access were verified on November 4, 2026, following the [successful publication workflow](https://github.com/felixstudio-dev/apply-correction-PHP2Shell/actions/runs/41781267106). Pin the published immutable digest in a downstream Dockerfile:
 
 ```dockerfile
-FROM ghcr.io/felixstudio-dev/apply-correction-php2shell@sha256:VERIFIED_DIGEST AS php2shell
+FROM ghcr.io/felixstudio-dev/apply-correction-php2shell@sha256:2dbfe81fc6762b19b653c0cf806f97343dcb7e6f467ce2328ea51feabed468dd AS php2shell
 FROM your-existing-php-image
 COPY --from=php2shell /usr/local/bin/php2shell-fix /usr/local/bin/php2shell-fix
 ```
